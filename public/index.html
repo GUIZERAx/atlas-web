@@ -1,1 +1,2494 @@
-.
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#080811">
+<title>Atlas IA</title>
+<style>
+:root{
+  --bg:#080811;--bg2:#0f0f1c;--bg3:#161626;--card:#111120;
+  --b:rgba(255,255,255,.06);--b2:rgba(255,255,255,.12);
+  --ac:#00e5ff;--ac2:#6d28d9;
+  --green:#00ff88;--red:#ff3366;--gold:#ffd700;--orange:#ff6b35;
+  --text:#e8e8f2;--muted:#4a5568;
+  --r:12px;--rs:8px;--panel:360px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;overflow:hidden}
+
+/* ── LOGIN ────────────────────────────────────── */
+#scr-login{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;min-height:100dvh;padding:24px;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(109,40,217,.3) 0%,transparent 60%),var(--bg)
+}
+.l-glow{width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,var(--ac2),var(--ac));
+  display:flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:16px;
+  box-shadow:0 0 60px rgba(109,40,217,.4)}
+.l-title{font-size:34px;font-weight:900;letter-spacing:-1.5px;margin-bottom:6px}
+.l-title span{background:linear-gradient(120deg,var(--ac),var(--ac2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.l-sub{font-size:13px;color:var(--muted);margin-bottom:40px;text-align:center;line-height:1.6;max-width:260px}
+.l-card{width:100%;max-width:400px;background:rgba(15,15,28,.9);border:1px solid var(--b2);
+  border-radius:20px;padding:28px;backdrop-filter:blur(20px);box-shadow:0 40px 80px rgba(0,0,0,.6)}
+.l-label{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;
+  margin-bottom:8px;margin-top:18px}
+.l-label:first-child{margin-top:0}
+.l-input{width:100%;background:var(--bg3);border:1.5px solid var(--b);border-radius:var(--rs);
+  padding:14px 16px;color:var(--text);font-size:16px;outline:none;transition:.2s;-webkit-appearance:none}
+.l-input:focus{border-color:var(--ac)}
+.l-btn{width:100%;background:linear-gradient(135deg,var(--ac2),var(--ac));border:none;
+  border-radius:var(--r);padding:16px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;
+  margin-top:22px;letter-spacing:.3px;transition:.15s}
+.l-btn:active{opacity:.85}.l-btn:disabled{opacity:.4;cursor:not-allowed}
+.l-err{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px}
+
+/* ── APP ──────────────────────────────────────── */
+#scr-app{display:none;height:100vh;height:100dvh;flex-direction:column}
+
+/* Topbar */
+.topbar{height:50px;background:rgba(8,8,17,.97);border-bottom:1px solid var(--b);
+  display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:40;
+  backdrop-filter:blur(20px)}
+.tb-brand{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.tb-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--ac2),var(--ac));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.tb-name{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.tb-name em{color:var(--ac);font-style:normal}
+.tb-mid{flex:1;display:flex;align-items:center;justify-content:center;gap:8px}
+.tb-mesa{background:var(--bg3);border:1px solid var(--b);border-radius:20px;
+  padding:3px 11px;font-size:10px;font-weight:700;color:var(--muted);
+  max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-conn{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;
+  border:1px solid var(--b);font-size:9px;font-weight:700;color:var(--muted);cursor:pointer;transition:.2s}
+.tb-conn:hover{border-color:var(--ac)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);transition:.4s;flex-shrink:0}
+.dot.ok{background:var(--green);box-shadow:0 0 8px var(--green)}
+.dot.warn{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.tb-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;transition:.3s;border:2px solid var(--b);flex-shrink:0}
+.tb-num.v{background:#6b1010;border-color:#c62828;color:#ffa0a0}
+.tb-num.p{background:#161626;border-color:#2a2a40;color:#ccc}
+.tb-num.z{background:#063310;border-color:#1b5e20;color:#69f0ae}
+@keyframes numPop{0%{transform:scale(1)}45%{transform:scale(1.55)}100%{transform:scale(1)}}
+.num-pop{animation:numPop .4s cubic-bezier(.34,1.56,.64,1)}
+
+/* Body */
+.app-body{flex:1;display:flex;overflow:hidden;min-height:0}
+
+/* Painel Cassino */
+.p-casino{flex:1;min-width:0;background:#000;display:flex;flex-direction:column}
+.casino-bar{height:42px;background:var(--bg2);border-bottom:1px solid var(--b);
+  display:flex;align-items:center;padding:0 10px;gap:7px;flex-shrink:0}
+.c-url{flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:7px;
+  padding:0 11px;height:28px;color:var(--text);font-size:11px;outline:none}
+.c-url:focus{border-color:var(--ac)}
+.c-btn{background:var(--bg3);border:1px solid var(--b);border-radius:7px;padding:0 10px;
+  height:28px;color:var(--text);font-size:11px;cursor:pointer;transition:.15s;white-space:nowrap}
+.c-btn:hover{border-color:var(--ac);color:var(--ac)}
+.c-btn.primary{background:var(--ac2);border-color:var(--ac2);color:#fff;font-weight:700}
+.frame-area{flex:1;position:relative}
+.game-frame{width:100%;height:100%;border:none;display:block}
+.frame-overlay{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;z-index:5}
+.frame-overlay.hidden{display:none}
+.fo-ico{font-size:54px}
+.fo-title{font-size:20px;font-weight:800}
+.fo-sub{font-size:13px;color:var(--muted);text-align:center;max-width:300px;line-height:1.7}
+.fo-btn{background:linear-gradient(135deg,var(--ac2),var(--ac));border:none;
+  border-radius:var(--r);padding:14px 32px;color:#fff;font-size:14px;font-weight:800;cursor:pointer}
+
+/* Painel Análise */
+.p-atlas{width:var(--panel);flex-shrink:0;background:var(--bg);border-left:1px solid var(--b);
+  display:flex;flex-direction:column;overflow:hidden}
+.a-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--b);flex-shrink:0}
+.a-tab{flex:1;padding:11px 4px;text-align:center;font-size:9px;font-weight:800;color:var(--muted);
+  cursor:pointer;transition:.15s;letter-spacing:.4px;position:relative;user-select:none}
+.a-tab.on{color:var(--ac)}
+.a-tab.on::after{content:'';position:absolute;bottom:0;left:22%;right:22%;height:2px;background:var(--ac);border-radius:2px}
+.a-scroll{flex:1;overflow-y:auto;padding:10px;-webkit-overflow-scrolling:touch}
+.a-scroll::-webkit-scrollbar{width:3px}
+.a-scroll::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+.a-page{display:none}.a-page.on{display:block}
+
+/* Status card */
+.scard{background:var(--card);border:1.5px solid var(--b);border-radius:var(--r);
+  padding:14px;margin-bottom:10px;min-height:90px;position:relative;overflow:hidden;transition:.35s}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--ac),transparent);opacity:.18}
+.scard.s-ap{border-color:rgba(0,255,136,.4);background:linear-gradient(135deg,#061a0d,#0c2010)}
+.scard.s-ap::before{background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.7}
+.scard.s-co{border-color:rgba(0,229,255,.2);background:linear-gradient(135deg,#05121a,#0c1a22)}
+.scard.s-bl{border-color:rgba(255,107,53,.3);background:linear-gradient(135deg,#1a0906,#1f0e08)}
+@keyframes cardGlow{0%,100%{box-shadow:none}50%{box-shadow:0 0 28px rgba(0,255,136,.2)}}
+.scard.s-gn{border-color:var(--green);animation:cardGlow .7s ease}
+.scard.s-ls{border-color:var(--red)}
+.s-fase{font-size:10px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.s-nome{font-size:14px;font-weight:700;line-height:1.2;margin-bottom:3px}
+.s-sub{font-size:10px;color:var(--muted);margin-bottom:5px}
+.s-ext{margin-top:4px}
+.s-nums{display:flex;flex-wrap:wrap;gap:4px}
+.s-sinal-prog{background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.14);border-radius:7px;padding:6px 9px;margin-top:6px}
+
+/* Números */
+.n{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:11px;font-weight:900}
+.n.v{background:#6b1010;color:#ffa0a0}
+.n.p{background:#161626;color:#ccc;border:1px solid #2a2a40}
+.n.z{background:#063310;color:#69f0ae}
+.n.hi{box-shadow:0 0 0 2.5px var(--gold)}
+
+/* Placar */
+.placar{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
+.pi{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:8px 4px;text-align:center}
+.pv{font-size:20px;font-weight:900}
+.pv.g{color:var(--green)}.pv.r{color:var(--red)}.pv.a{color:var(--gold)}.pv.b{color:var(--ac)}
+.pl{font-size:8px;color:var(--muted);margin-top:2px;font-weight:800;letter-spacing:.4px}
+
+/* Recentes */
+.rec-scroll{display:flex;gap:4px;overflow-x:auto;padding:2px 0 6px}
+.rec-scroll::-webkit-scrollbar{display:none}
+
+/* Card genérico */
+.card{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.card-t{font-size:9px;font-weight:800;color:var(--muted);letter-spacing:.7px;text-transform:uppercase;
+  margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}
+
+/* Entrada box */
+.ebox{background:rgba(0,255,136,.05);border:1.5px solid rgba(0,255,136,.2);
+  border-radius:var(--r);padding:12px;margin-bottom:10px}
+.ebox-t{font-size:10px;font-weight:800;color:var(--green);letter-spacing:.5px;margin-bottom:6px}
+
+/* Gatilhos */
+.gats{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.gt{padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;border:1px solid}
+.gt.ok{background:rgba(0,255,136,.1);border-color:rgba(0,255,136,.25);color:var(--green)}
+.gt.fail{background:rgba(255,51,102,.1);border-color:rgba(255,51,102,.25);color:var(--red)}
+
+/* Saldo */
+.saldo-bar{display:flex;justify-content:space-between;align-items:center;
+  padding:6px 10px;background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.1);
+  border-radius:8px;margin-bottom:9px}
+.sl{font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.4px}
+.sv{font-size:13px;font-weight:900;color:var(--ac)}
+.sd.up{color:var(--green);font-size:11px;font-weight:700}
+.sd.dn{color:var(--red);font-size:11px;font-weight:700}
+.auto-b{display:inline-flex;align-items:center;gap:4px;background:rgba(109,40,217,.15);
+  border:1px solid rgba(109,40,217,.3);border-radius:5px;padding:2px 8px;font-size:9px;
+  font-weight:700;color:var(--ac2);cursor:pointer;user-select:none;transition:.2s}
+.auto-b.on{background:rgba(0,255,136,.12);border-color:rgba(0,255,136,.3);color:var(--green)}
+
+/* Config */
+.cfg-cats{display:flex;gap:4px;overflow-x:auto;padding:0 0 8px;-webkit-overflow-scrolling:touch;margin-bottom:5px}
+.cfg-cats::-webkit-scrollbar{display:none}
+.cfg-cat{flex-shrink:0;background:var(--bg3);border:1px solid var(--b);border-radius:20px;
+  padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
+.cfg-cat.on{background:var(--ac2);border-color:var(--ac2);color:#fff}
+.e-row{display:flex;align-items:center;padding:7px 9px;background:var(--bg3);border-radius:8px;gap:8px;margin-bottom:2px}
+.e-nome{flex:1;font-size:11px;font-weight:600}
+.e-gat{font-size:10px;color:var(--muted)}
+.sw{width:36px;height:20px;background:var(--bg3);border-radius:10px;position:relative;cursor:pointer;
+  transition:.2s;border:1px solid var(--b);flex-shrink:0}
+.sw.on{background:var(--ac2)}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:.2s}
+.sw.on::after{left:18px}
+.sw-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--b)}
+.sw-row:last-child{border-bottom:none}
+.sw-info .sw-n{font-size:12px;font-weight:600}
+.sw-info .sw-d{font-size:10px;color:var(--muted);margin-top:2px}
+.sp-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--b)}
+.sp-row:last-child{border-bottom:none}
+.sp-info .sp-n{font-size:12px;font-weight:600}
+.sp-info .sp-d{font-size:10px;color:var(--muted);margin-top:2px}
+.stepper{display:flex;align-items:center;border:1px solid var(--b);border-radius:7px;overflow:hidden}
+.sp-b{background:var(--bg3);border:none;color:var(--text);width:28px;height:28px;font-size:15px;cursor:pointer}
+.sp-v{background:var(--bg2);min-width:30px;height:28px;display:flex;align-items:center;
+  justify-content:center;font-size:12px;font-weight:700;border-left:1px solid var(--b);border-right:1px solid var(--b)}
+
+/* Conf bars */
+.conf-bar{display:flex;gap:3px;margin:3px 0}
+.c-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--b);
+  display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700}
+.c-dot.vd{background:rgba(0,255,136,.2);border-color:var(--green);color:var(--green)}
+.c-dot.fo{background:rgba(255,215,0,.2);border-color:var(--gold);color:var(--gold)}
+
+/* Histórico */
+.h-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-bottom:3px}
+.h-ico{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.h-ico.w{background:rgba(0,255,136,.1)}.h-ico.l{background:rgba(255,51,102,.1)}.h-ico.g{background:rgba(255,215,0,.1)}
+.h-info{flex:1;min-width:0}
+.h-nome{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-sub{font-size:9px;color:var(--muted)}
+.h-r.w{color:var(--green);font-size:10px;font-weight:700}
+.h-r.l{color:var(--red);font-size:10px;font-weight:700}
+.h-r.g{color:var(--gold);font-size:10px;font-weight:700}
+
+/* Botão salvar */
+.btn-save{width:100%;background:linear-gradient(135deg,var(--ac2),var(--ac));border:none;
+  border-radius:var(--r);padding:12px;color:#fff;font-size:13px;font-weight:800;cursor:pointer;margin-top:10px}
+
+/* Toast */
+.toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:var(--bg3);border:1px solid var(--ac);border-radius:9px;padding:9px 18px;
+  font-size:12px;font-weight:600;color:var(--ac);opacity:0;transition:.25s;pointer-events:none;
+  z-index:9999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Notificação flutuante */
+.notif-wrap{position:fixed;top:50px;right:0;width:var(--panel);z-index:500;pointer-events:none;padding:8px}
+.notif{background:linear-gradient(135deg,#061a0d,#0c2010);border:2px solid var(--green);
+  border-radius:var(--r);padding:12px 14px;transform:translateX(110%);
+  transition:.42s cubic-bezier(.34,1.56,.64,1);box-shadow:-6px 8px 32px rgba(0,255,136,.15)}
+.notif.show{transform:translateX(0)}
+.notif.red{background:linear-gradient(135deg,#1a0607,#200c10);border-color:var(--red);box-shadow:-6px 8px 32px rgba(255,51,102,.15)}
+.notif-title{font-size:14px;font-weight:800;margin-bottom:2px}
+.notif-nums{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+
+/* Mobile */
+@media(max-width:900px){
+  .p-casino{display:none}
+  .p-casino.mob{display:flex}
+  .p-atlas{width:100%;border-left:none}
+  .notif-wrap{width:100%;right:auto;left:0}
+  .notif{transform:translateY(-120%)}
+  .notif.show{transform:translateY(0)}
+}
+.fab{position:fixed;bottom:14px;right:14px;width:50px;height:50px;border-radius:50%;
+  background:linear-gradient(135deg,var(--ac2),var(--ac));border:none;color:#fff;font-size:21px;
+  cursor:pointer;z-index:200;box-shadow:0 4px 20px rgba(109,40,217,.5);display:none;
+  align-items:center;justify-content:center}
+@media(max-width:900px){.fab{display:flex}}
+
+.empty{text-align:center;padding:32px 10px;color:var(--muted)}
+.empty .ei{font-size:40px;margin-bottom:8px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .22s ease both}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="scr-login">
+  <div class="l-glow">🎯</div>
+  <div class="l-title">Atlas <span>IA</span></div>
+  <div class="l-sub">Análise inteligente de roleta europeia em tempo real</div>
+  <div class="l-card">
+    <div class="l-label">Usuário</div>
+    <input class="l-input" id="l-u" type="text" placeholder="seu usuario" autocomplete="username">
+    <div class="l-label">Senha</div>
+    <input class="l-input" id="l-p" type="password" placeholder="sua senha" autocomplete="current-password">
+    <button class="l-btn" id="l-btn" onclick="doLogin()">Entrar no Atlas IA →</button>
+    <div class="l-err" id="l-err"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="scr-app">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="tb-brand">
+      <div class="tb-icon">🎯</div>
+      <div class="tb-name">Atlas <em>IA</em></div>
+    </div>
+    <div class="tb-mid">
+      <div class="tb-mesa" id="tb-mesa">—</div>
+      <div class="tb-conn" id="tb-conn" onclick="connInfo()">
+        <div class="dot" id="conn-dot"></div>
+        <span id="conn-lbl">Offline</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;flex-shrink:0">
+      <span class="sv" id="tb-saldo" style="font-size:12px;display:none">R$ —</span>
+      <div class="tb-num p" id="tb-num">—</div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="app-body">
+
+    <!-- Casino -->
+    <div class="p-casino" id="p-casino">
+      <div class="casino-bar">
+        <input class="c-url" id="c-url" value="https://betou.bet.br/games/evolution/auto-roulette" placeholder="URL da roleta">
+        <button class="c-btn" onclick="recarregar()" title="Recarregar">↺</button>
+        <button class="c-btn primary" id="btn-start" onclick="conectar()">▶ Iniciar</button>
+      </div>
+      <div class="frame-area">
+        <div class="frame-overlay" id="f-overlay">
+          <div class="fo-ico">🎰</div>
+          <div class="fo-title">Roleta ao Vivo</div>
+          <div class="fo-sub">Cole a URL de qualquer roleta ao vivo e clique <b>▶ Iniciar</b>. A IA detecta os números e analisa automaticamente.</div>
+          <button class="fo-btn" onclick="conectar()">▶ Iniciar análise</button>
+        </div>
+        <iframe id="game-frame" class="game-frame" src="about:blank"
+          allow="autoplay;fullscreen;pointer-lock"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"></iframe>
+      </div>
+    </div>
+
+    <!-- Atlas -->
+    <div class="p-atlas">
+      <div class="a-tabs">
+        <div class="a-tab on" data-t="analise">📊 Análise</div>
+        <div class="a-tab" data-t="config">⚙️ Config</div>
+        <div class="a-tab" data-t="historico">📋 Histórico</div>
+      </div>
+      <div class="a-scroll">
+
+        <!-- ANÁLISE -->
+        <div class="a-page on" id="pg-analise">
+
+          <div class="saldo-bar" id="saldo-bar" style="display:none">
+            <div><div class="sl">SALDO</div><div class="sv" id="sv">—</div></div>
+            <div style="text-align:right"><div class="sl">RESULTADO</div><div class="sd" id="sd">—</div></div>
+            <div style="text-align:right;cursor:pointer" onclick="toggleAuto()">
+              <div class="sl">AUTO-APOSTA</div>
+              <div class="auto-b" id="auto-b">OFF</div>
+            </div>
+          </div>
+
+          <div class="scard" id="scard">
+            <div class="s-fase" id="s-fase">
+              <span style="font-size:16px">🔍</span>
+              <span style="color:var(--muted)">AGUARDANDO</span>
+            </div>
+            <div class="s-nome" id="s-nome" style="color:var(--muted);font-size:12px">Inicie a roleta para análise automática</div>
+            <div class="s-sub" id="s-sub"></div>
+            <div class="s-ext" id="s-ext"></div>
+          </div>
+
+          <div class="placar">
+            <div class="pi"><div class="pv g" id="p-a">0</div><div class="pl">GREEN</div></div>
+            <div class="pi"><div class="pv r" id="p-e">0</div><div class="pl">RED</div></div>
+            <div class="pi"><div class="pv a" id="p-t">—</div><div class="pl">TAXA</div></div>
+            <div class="pi"><div class="pv b" id="p-g">0</div><div class="pl">GIROS</div></div>
+          </div>
+
+          <div id="ebox" style="display:none">
+            <div class="ebox">
+              <div class="ebox-t">🚀 APOSTE AGORA!</div>
+              <div id="eb-nome" style="font-size:13px;font-weight:700;margin-bottom:3px"></div>
+              <div id="eb-sub" style="font-size:10px;color:var(--muted);margin-bottom:6px"></div>
+              <div class="s-nums" id="eb-nums"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-t">Últimos números <span id="rec-cnt" style="color:var(--muted);font-weight:600"></span></div>
+            <div class="rec-scroll" id="rec-scroll"></div>
+          </div>
+
+          <div class="card" id="card-gat" style="display:none">
+            <div class="card-t">Gatilhos nesta sessão</div>
+            <div class="gats" id="gats-list"></div>
+          </div>
+
+        </div>
+
+        <!-- CONFIG -->
+        <div class="a-page" id="pg-config">
+          <div class="cfg-cats" id="cfg-cats">
+            <div class="cfg-cat on" data-c="classicas">Clássicas</div>
+            <div class="cfg-cat" data-c="invertidos">Invertidos</div>
+            <div class="cfg-cat" data-c="fixos">Fixos</div>
+            <div class="cfg-cat" data-c="poucas">Poucas</div>
+            <div class="cfg-cat" data-c="chamam">Se Chamam</div>
+            <div class="cfg-cat" data-c="gatilhos">Gatilhos</div>
+            <div class="cfg-cat" data-c="puxam">Puxam</div>
+            <div class="cfg-cat" data-c="sinais">Sinais</div>
+            <div class="cfg-cat" data-c="precisao">Precisão</div>
+            <div class="cfg-cat" data-c="auto">Auto-Aposta</div>
+          </div>
+          <div id="cfg-body"></div>
+          <button class="btn-save" onclick="salvarCfg()">💾 Salvar configurações</button>
+        </div>
+
+        <!-- HISTÓRICO -->
+        <div class="a-page" id="pg-historico">
+          <div id="hist-list">
+            <div class="empty"><div class="ei">📋</div><div>Nenhuma jogada ainda</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <button class="fab" id="fab" onclick="toggleMob()">🎰</button>
+</div>
+
+<!-- Toast & Notif -->
+<div class="toast" id="toast"></div>
+<div class="notif-wrap">
+  <div class="notif" id="notif">
+    <div class="notif-title" id="n-title"></div>
+    <div id="n-sub" style="font-size:11px;color:var(--muted)"></div>
+    <div class="notif-nums" id="n-nums"></div>
+  </div>
+</div>
+
+<script>
+'use strict'
+// ══════════════════════════════════════════════════════════
+// ESTRATÉGIAS (mesmas da extensão — 72 clássicas + PDFs + 37 sinais)
+// ══════════════════════════════════════════════════════════
+var ESTRATEGIAS = [
+
+    // ── ELITE 2X ──────────────────────────────────────────
+    { nome: "ELITE 2X — T4",  ativo: true, gatilho: "4",
+      tendencia: ["14","24","34"], neutro: ["7","8","10","11","13","16","18","20","23","27","30","33","36"],
+      entrada: ["0","2","9","12","15","18","21","22","25","28","32","35"] },
+    { nome: "ELITE 2X — T14", ativo: true, gatilho: "14",
+      tendencia: ["4","24","34"],  neutro: ["7","8","10","11","13","16","18","20","23","27","30","33","36"],
+      entrada: ["0","2","9","12","15","18","21","22","25","28","32","35"] },
+    { nome: "ELITE 2X — T24", ativo: true, gatilho: "24",
+      tendencia: ["4","14","34"],  neutro: ["7","8","10","11","13","16","18","20","23","27","30","33","36"],
+      entrada: ["0","2","9","12","15","18","21","22","25","28","32","35"] },
+    { nome: "ELITE 2X — T34", ativo: true, gatilho: "34",
+      tendencia: ["4","14","24"],  neutro: ["7","8","10","11","13","16","18","20","23","27","30","33","36"],
+      entrada: ["0","2","9","12","15","18","21","22","25","28","32","35"] },
+    { nome: "ELITE 2X — T5",  ativo: true, gatilho: "5",
+      tendencia: ["15","25","35"], neutro: ["7","8","10","11","13","16","18","20","23","27","30","33","36"],
+      entrada: ["0","2","9","12","15","18","21","22","25","28","32","35"] },
+    { nome: "ELITE 2X — T15", ativo: true, gatilho: "15",
+      tendencia: ["5","25","35"],  neutro: ["7","8","10","11","13","16","18","20","23","27","30","33","36"],
+      entrada: ["0","2","9","12","15","18","21","22","25","28","32","35"] },
+    { nome: "ELITE 2X — T25", ativo: true, gatilho: "25",
+      tendencia: ["5","15","35"],  neutro: ["7","8","10","11","13","16","18","20","23","27","30","33","36"],
+      entrada: ["0","2","9","12","15","18","21","22","25","28","32","35"] },
+    { nome: "ELITE 2X — T35", ativo: true, gatilho: "35",
+      tendencia: ["5","15","25"],  neutro: ["7","8","10","11","13","16","18","20","23","27","30","33","36"],
+      entrada: ["0","2","9","12","15","18","21","22","25","28","32","35"] },
+
+    // ── QUARTA DIMENSÃO ──────────────────────────────────
+    { nome: "QUARTA DIMENSÃO — T1",  ativo: true, gatilho: "1",
+      tendencia: ["11","21","31"], neutro: ["7","8","10","15","17","18","20","22","26","28","29","30","32","35","36"],
+      entrada: ["4","5","6","14","16","17","19","20","21","24","31","34"] },
+    { nome: "QUARTA DIMENSÃO — T11", ativo: true, gatilho: "11",
+      tendencia: ["1","21","31"],  neutro: ["7","8","10","15","17","18","20","22","26","28","29","30","32","35","36"],
+      entrada: ["4","5","6","14","16","17","19","20","21","24","31","34"] },
+    { nome: "QUARTA DIMENSÃO — T21", ativo: true, gatilho: "21",
+      tendencia: ["1","11","31"],  neutro: ["7","8","10","15","17","18","20","22","26","28","29","30","32","35","36"],
+      entrada: ["4","5","6","14","16","17","19","20","21","24","31","34"] },
+    { nome: "QUARTA DIMENSÃO — T31", ativo: true, gatilho: "31",
+      tendencia: ["1","11","21"],  neutro: ["7","8","10","15","17","18","20","22","26","28","29","30","32","35","36"],
+      entrada: ["4","5","6","14","16","17","19","20","21","24","31","34"] },
+    { nome: "QUARTA DIMENSÃO — T3",  ativo: true, gatilho: "3",
+      tendencia: ["13","23","33"], neutro: ["7","8","10","15","17","18","20","22","26","28","29","30","32","35","36"],
+      entrada: ["4","5","6","14","16","17","19","20","21","24","31","34"] },
+    { nome: "QUARTA DIMENSÃO — T13", ativo: true, gatilho: "13",
+      tendencia: ["3","23","33"],  neutro: ["7","8","10","15","17","18","20","22","26","28","29","30","32","35","36"],
+      entrada: ["4","5","6","14","16","17","19","20","21","24","31","34"] },
+    { nome: "QUARTA DIMENSÃO — T23", ativo: true, gatilho: "23",
+      tendencia: ["3","13","33"],  neutro: ["7","8","10","15","17","18","20","22","26","28","29","30","32","35","36"],
+      entrada: ["4","5","6","14","16","17","19","20","21","24","31","34"] },
+    { nome: "QUARTA DIMENSÃO — T33", ativo: true, gatilho: "33",
+      tendencia: ["3","13","23"],  neutro: ["7","8","10","15","17","18","20","22","26","28","29","30","32","35","36"],
+      entrada: ["4","5","6","14","16","17","19","20","21","24","31","34"] },
+
+    // ── FÓRMULA 5X ───────────────────────────────────────
+    { nome: "FÓRMULA 5X — T6",  ativo: true, gatilho: "6",
+      tendencia: ["16","26","36"], neutro: ["1","3","7","9","11","13","14","18","20","22","27","29","30","31","33"],
+      entrada: ["2","3","5","10","12","15","17","19","24","25","32","35"] },
+    { nome: "FÓRMULA 5X — T16", ativo: true, gatilho: "16",
+      tendencia: ["6","26","36"],  neutro: ["1","3","7","9","11","13","14","18","20","22","27","29","30","31","33"],
+      entrada: ["2","3","5","10","12","15","17","19","24","25","32","35"] },
+    { nome: "FÓRMULA 5X — T26", ativo: true, gatilho: "26",
+      tendencia: ["6","16","36"],  neutro: ["1","3","7","9","11","13","14","18","20","22","27","29","30","31","33"],
+      entrada: ["2","3","5","10","12","15","17","19","24","25","32","35"] },
+    { nome: "FÓRMULA 5X — T36", ativo: true, gatilho: "36",
+      tendencia: ["6","16","26"],  neutro: ["1","3","7","9","11","13","14","18","20","22","27","29","30","31","33"],
+      entrada: ["2","3","5","10","12","15","17","19","24","25","32","35"] },
+    { nome: "FÓRMULA 5X — T8",  ativo: true, gatilho: "8",
+      tendencia: ["18","28"], neutro: ["1","3","7","9","11","13","14","20","22","27","29","30","31","33","36"],
+      entrada: ["2","3","5","10","12","15","17","19","24","25","32","35"] },
+    { nome: "FÓRMULA 5X — T18", ativo: true, gatilho: "18",
+      tendencia: ["8","28"],  neutro: ["1","3","7","9","11","13","14","20","22","27","29","30","31","33","36"],
+      entrada: ["2","3","5","10","12","15","17","19","24","25","32","35"] },
+    { nome: "FÓRMULA 5X — T28", ativo: true, gatilho: "28",
+      tendencia: ["8","18"],  neutro: ["1","3","7","9","11","13","14","20","22","27","29","30","31","33","36"],
+      entrada: ["2","3","5","10","12","15","17","19","24","25","32","35"] },
+
+    // ── PADRÃO BLACK ─────────────────────────────────────
+    { nome: "PADRÃO BLACK — 13", ativo: true, gatilho: "13",
+      tendencia: ["31","33"], neutro: ["2","3","4","5","7","8","10","12","15","17","18","19","21","23","25","26","28","29","32","34","35"],
+      entrada: ["1","6","9","11","13","14","16","20","22","24","27","31","33","36"] },
+    { nome: "PADRÃO BLACK — 31", ativo: true, gatilho: "31",
+      tendencia: ["13","33"], neutro: ["2","3","4","5","7","8","10","12","15","17","18","19","21","23","25","26","28","29","32","34","35"],
+      entrada: ["1","6","9","11","13","14","16","20","22","24","27","31","33","36"] },
+    { nome: "PADRÃO BLACK — 33", ativo: true, gatilho: "33",
+      tendencia: ["13","31"], neutro: ["2","3","4","5","7","8","10","12","15","17","18","19","21","23","25","26","28","29","32","34","35"],
+      entrada: ["1","6","9","11","13","14","16","20","22","24","27","31","33","36"] },
+
+    // ── QUADRANTES ───────────────────────────────────────
+    { nome: "QUADRANTES — Q1", ativo: true, gatilho: "1",
+      tendencia: ["2","4","5"], neutro: ["6","7","8","9","10","11","12","15","18","19","20","21","22","28","29","30","33","36"],
+      entrada: ["1","2","4","5","13","14","16","17","23","24","26","27","31","32","34","35"] },
+    { nome: "QUADRANTES — Q2", ativo: true, gatilho: "13",
+      tendencia: ["14","16","17"], neutro: ["6","7","8","9","10","11","12","15","18","19","20","21","22","28","29","30","33","36"],
+      entrada: ["1","2","4","5","13","14","16","17","23","24","26","27","31","32","34","35"] },
+    { nome: "QUADRANTES — Q3", ativo: true, gatilho: "23",
+      tendencia: ["24","26","27"], neutro: ["6","7","8","9","10","11","12","15","18","19","20","21","22","28","29","30","33","36"],
+      entrada: ["1","2","4","5","13","14","16","17","23","24","26","27","31","32","34","35"] },
+    { nome: "QUADRANTES — Q4", ativo: true, gatilho: "31",
+      tendencia: ["32","34","35"], neutro: ["6","7","8","9","10","11","12","15","18","19","20","21","22","28","29","30","33","36"],
+      entrada: ["1","2","4","5","13","14","16","17","23","24","26","27","31","32","34","35"] },
+
+    // ── INVERTIDOS v11 ── Par espelhado + vizinhos na roda
+    // PDF: 5 tendências para capturar. Entrada: par + 3 vizinhos de cada
+    { nome: "INVERTIDOS — 12→21", ativo: true, exigirTend: true, gatilho: "12",
+      tendencia: ["17","25","35","21","24"],
+      neutro:    ["0","7","8","10","15","18","19","26","27","29","30"],
+      entrada:   ["12","28","35","3","21","2","25","17","24","32"] },
+    { nome: "INVERTIDOS — 21→12", ativo: true, exigirTend: true, gatilho: "21",
+      tendencia: ["17","25","24","18","22"],
+      neutro:    ["0","7","8","10","15","19","26","27","29","30"],
+      entrada:   ["21","4","19","2","12","28","35","25","17","32"] },
+    { nome: "INVERTIDOS — 13→31", ativo: true, exigirTend: true, gatilho: "13",
+      tendencia: ["17","25","35","31","24"],
+      neutro:    ["0","2","5","7","8","10","15","18","19","26","27","29","30"],
+      entrada:   ["13","27","36","22","31","9","22","14","17","24"] },
+    { nome: "INVERTIDOS — 31→13", ativo: true, exigirTend: true, gatilho: "31",
+      tendencia: ["17","25","35","13","24"],
+      neutro:    ["0","2","5","7","8","10","15","18","19","26","27","29","30"],
+      entrada:   ["31","9","22","14","13","27","36","17","24","4"] },
+    { nome: "INVERTIDOS — 23→32", ativo: true, exigirTend: true, gatilho: "23",
+      tendencia: ["17","25","35","32","24","20","18"],
+      neutro:    ["0","2","5","7","8","10","15","19","26","27","29","30"],
+      entrada:   ["23","10","5","16","32","15","19","27","24","33"] },
+    { nome: "INVERTIDOS — 32→23", ativo: true, exigirTend: true, gatilho: "32",
+      tendencia: ["17","25","35","23","24","20","18"],
+      neutro:    ["0","2","5","7","8","10","15","19","26","27","29","30"],
+      entrada:   ["32","15","19","27","23","10","5","16","24","33"] },
+
+    // ── FIXOS v11 ── Terminal completo + 1 viz cada lado na roda
+    { nome: "FIXOS — T0 (0·10·20·30)", ativo: true, exigirTend: true, gatilho: "0",
+      tendencia: ["10","20","30"],
+      neutro:    ["3","5","7","8","12","13","18","19","21","23","25","27","28","32","34","35"],
+      entrada:   ["0","32","15","10","5","24","20","14","31","30","8","23"] },
+    { nome: "FIXOS — T10", ativo: true, exigirTend: true, gatilho: "10",
+      tendencia: ["0","20","30"],
+      neutro:    ["3","5","7","8","12","13","18","19","21","23","25","27","28","32","34","35"],
+      entrada:   ["10","5","24","0","32","15","20","14","31","30","8","23"] },
+    { nome: "FIXOS — T20", ativo: true, exigirTend: true, gatilho: "20",
+      tendencia: ["0","10","30"],
+      neutro:    ["3","5","7","8","12","13","18","19","21","23","25","27","28","32","34","35"],
+      entrada:   ["20","14","31","0","32","15","10","5","24","30","8","23"] },
+    { nome: "FIXOS — T30", ativo: true, exigirTend: true, gatilho: "30",
+      tendencia: ["0","10","20"],
+      neutro:    ["3","5","7","8","12","13","18","19","21","23","25","27","28","32","34","35"],
+      entrada:   ["30","8","23","0","32","15","10","5","24","20","14","31"] },
+    { nome: "FIXOS — T11 (11·22·33)", ativo: true, exigirTend: true, gatilho: "11",
+      tendencia: ["22","33"],
+      neutro:    ["0","3","4","6","7","9","10","12","15","17","19","21","25","26","28","29","32","34","35"],
+      entrada:   ["11","30","8","22","18","29","33","16","24"] },
+    { nome: "FIXOS — T22", ativo: true, exigirTend: true, gatilho: "22",
+      tendencia: ["11","33"],
+      neutro:    ["0","3","4","6","7","9","10","12","15","17","19","21","25","26","28","29","32","34","35"],
+      entrada:   ["22","18","29","11","30","8","33","16","24"] },
+    { nome: "FIXOS — T33", ativo: true, exigirTend: true, gatilho: "33",
+      tendencia: ["11","22"],
+      neutro:    ["0","3","4","6","7","9","10","12","15","17","19","21","25","26","28","29","32","34","35"],
+      entrada:   ["33","16","24","11","30","8","22","18","29"] },
+    { nome: "FIXOS — T7 (7·17·27)", ativo: true, exigirTend: true, gatilho: "7",
+      tendencia: ["17","27"],
+      neutro:    ["0","2","3","5","8","10","11","12","13","15","18","19","22","23","26","28","29","33","36"],
+      entrada:   ["7","28","12","17","34","6","27","13","36"] },
+    { nome: "FIXOS — T17", ativo: true, exigirTend: true, gatilho: "17",
+      tendencia: ["7","27"],
+      neutro:    ["0","2","3","5","8","10","11","12","13","15","18","19","22","23","26","28","29","33","36"],
+      entrada:   ["17","34","6","7","28","12","27","13","36"] },
+    { nome: "FIXOS — T27", ativo: true, exigirTend: true, gatilho: "27",
+      tendencia: ["7","17"],
+      neutro:    ["0","2","3","5","8","10","11","12","13","15","18","19","22","23","26","28","29","33","36"],
+      entrada:   ["27","13","36","17","34","6","7","28","12"] },
+
+    // ── POUCAS FICHAS v11 ── Entrada fiel ao material
+    { nome: "POUCAS FICHAS — N3", ativo: true, exigirTend: true, gatilho: "3",
+      tendencia: ["36","12","21"],
+      neutro:    ["0","2","4","5","7","8","10","11","13","15","17","18","19","22","23","24","26","27","28","29","31","34","35"],
+      entrada:   ["3","26","35","12","28","21","2","25"] },
+    { nome: "POUCAS FICHAS — N5", ativo: true, exigirTend: true, gatilho: "5",
+      tendencia: ["4","6","15","25","35"],
+      neutro:    ["0","2","3","7","8","9","10","11","12","13","17","18","19","21","22","23","24","26","27","28","29","31","34"],
+      entrada:   ["5","24","10","4","19","6","27","15","25","35"] },
+    { nome: "POUCAS FICHAS — N9", ativo: true, exigirTend: true, gatilho: "9",
+      tendencia: ["6","8"],
+      neutro:    ["0","2","3","4","5","7","10","11","12","13","15","17","18","19","21","22","23","24","26","27","28","29","31","34","35"],
+      entrada:   ["9","22","18","6","27","8","23","30"] },
+    { nome: "POUCAS FICHAS — N13", ativo: true, exigirTend: true, gatilho: "13",
+      tendencia: ["31","34","35","30"],
+      neutro:    ["0","2","3","5","7","8","10","12","15","17","18","19","21","22","23","24","26","27","28","29","32","33","36"],
+      entrada:   ["13","22","31","9","34","6","35","3","30","8"] },
+    { nome: "POUCAS FICHAS — N17", ativo: true, exigirTend: true, gatilho: "17",
+      tendencia: ["16","18","20","7","27"],
+      neutro:    ["0","2","3","5","8","10","12","13","15","19","21","22","23","24","26","28","29","31","34","35"],
+      entrada:   ["17","34","6","16","25","18","29","7","28","27","13","20"] },
+
+    // ── SE CHAMAM v11 ── Entradas enxutas, tendências fortes
+    { nome: "SE CHAMAM — N13", ativo: true, gatilho: "13",
+      tendencia: ["33","31"],
+      neutro:    ["0","2","4","5","7","8","10","12","15","17","18","19","21","23","25","28","29","32","34","35"],
+      entrada:   ["13","22","31","9","33","16","6","27"] },
+    { nome: "SE CHAMAM — N15", ativo: true, gatilho: "15",
+      tendencia: ["20","30"],
+      neutro:    ["1","3","5","7","8","9","11","12","13","16","18","21","23","24","26","27","28","29","31","34","36"],
+      entrada:   ["15","32","0","20","14","31","30","8"] },
+    { nome: "SE CHAMAM — N29", ativo: true, gatilho: "29",
+      tendencia: ["18","7"],
+      neutro:    ["0","2","4","5","8","10","12","13","15","17","19","21","23","25","26","27","28","31","34","35"],
+      entrada:   ["29","18","9","27","13","36","7","28"] },
+    { nome: "SE CHAMAM — N32", ativo: true, gatilho: "32",
+      tendencia: ["0","26"],
+      neutro:    ["3","4","5","7","8","9","11","12","13","16","18","20","21","23","24","27","28","29","31","34","36"],
+      entrada:   ["32","0","15","19","26","35","3","28"] },
+    { nome: "SE CHAMAM — N22", ativo: true, gatilho: "22",
+      tendencia: ["2","24"],
+      neutro:    ["0","3","5","7","8","10","11","12","13","15","17","19","21","26","27","28","29","30","31","33","34","35","36"],
+      entrada:   ["22","18","29","2","25","24","16","31"] },
+    { nome: "SE CHAMAM — N20", ativo: true, gatilho: "20",
+      tendencia: ["1","33"],
+      neutro:    ["2","3","5","6","7","8","10","11","12","13","16","17","18","19","22","23","24","26","28","29","31","34","35","36"],
+      entrada:   ["20","14","31","1","33","9","22","30"] },
+    { nome: "SE CHAMAM — N17", ativo: true, gatilho: "17",
+      tendencia: ["7","27"],
+      neutro:    ["0","2","3","5","8","10","11","12","13","15","18","19","22","23","26","28","29","33","36"],
+      entrada:   ["17","34","6","7","28","12","27","13"] },
+    { nome: "SE CHAMAM — N12", ativo: true, gatilho: "12",
+      tendencia: ["25","35"],
+      neutro:    ["0","2","4","6","7","8","10","13","15","18","19","21","23","27","28","29","31","34"],
+      entrada:   ["12","28","35","25","17","3","26","0"] },
+    { nome: "SE CHAMAM — N33", ativo: true, gatilho: "33",
+      tendencia: ["27","30","36"],
+      neutro:    ["2","4","5","7","8","9","10","12","13","15","18","19","21","23","24","26","28","29","31","34","35"],
+      entrada:   ["33","16","24","27","13","36","30","8"] },
+
+    // ── GATILHOS PERFEITOS v11 ────────────────────────────
+    { nome: "GATILHO — N15→T0", ativo: true, gatilho: "15",
+      tendencia: ["0","10","20","30"],
+      neutro:    ["1","3","5","7","8","9","11","12","13","16","18","21","23","24","26","27","28","29","31","34","36"],
+      entrada:   ["20","14","31","0","32","19","4","21"] },
+    { nome: "GATILHO — N34→T3", ativo: true, gatilho: "34",
+      tendencia: ["3","13","23","33"],
+      neutro:    ["0","2","4","5","7","8","9","11","12","15","17","18","19","21","22","26","27","28","29","31","32","36"],
+      entrada:   ["33","16","24","3","26","13","22","23"] },
+    { nome: "GATILHO — N23→N4", ativo: true, gatilho: "23",
+      tendencia: ["4","7","20"],
+      neutro:    ["0","2","5","8","9","11","12","13","15","17","18","21","22","24","26","27","28","29","31","33","34","35"],
+      entrada:   ["4","19","21","7","28","20","14","31"] },
+    { nome: "GATILHO — N28→T1", ativo: true, gatilho: "28",
+      tendencia: ["29","1","11","21","31"],
+      neutro:    ["0","2","4","5","8","10","12","13","15","17","18","19","22","23","24","26","27","32","33","34","35","36"],
+      entrada:   ["1","20","14","31","9","7","12","29"] },
+    { nome: "GATILHO — N25→N22", ativo: true, gatilho: "25",
+      tendencia: ["22","5","0"],
+      neutro:    ["2","3","4","7","8","9","10","11","12","13","15","17","18","19","21","23","26","27","28","29","31","34","36"],
+      entrada:   ["22","18","29","25","17","5","10","0"] },
+    { nome: "GATILHO — N13→T1", ativo: true, gatilho: "13",
+      tendencia: ["1","11","21","31"],
+      neutro:    ["0","2","3","4","5","7","8","10","12","15","17","18","19","22","23","24","25","26","27","28","29","32","34","35","36"],
+      entrada:   ["31","9","22","14","20","1","11","21"] },
+
+    // ── SE PUXAM v11 ────────────────────────────────────
+    { nome: "PUXAM — N11/13/15/17/24", ativo: true, gatilho: "11",
+      tendencia: ["13","15","20","17","24"],
+      neutro:    ["0","2","3","5","7","8","10","12","16","18","19","21","23","25","26","27","28","29","31","34","35","36"],
+      entrada:   ["11","30","8","13","22","15","32","17","34","24","16"] },
+    { nome: "PUXAM — N21/23/25/27", ativo: true, gatilho: "21",
+      tendencia: ["23","25","27"],
+      neutro:    ["0","2","3","5","7","8","10","12","13","15","16","18","19","22","24","26","28","29","31","34","35","36"],
+      entrada:   ["21","2","25","23","10","27","13","24"] },
+    { nome: "PUXAM — N23 (T20)", ativo: true, gatilho: "23",
+      tendencia: ["21","25","27"],
+      neutro:    ["0","2","3","5","7","8","10","12","13","15","16","18","19","22","24","26","28","29","31","34","35","36"],
+      entrada:   ["23","10","5","21","2","25","27","13"] },
+    { nome: "PUXAM — N33/31/35", ativo: true, gatilho: "33",
+      tendencia: ["31","35"],
+      neutro:    ["0","2","3","5","7","8","10","12","13","15","16","18","19","21","22","23","24","25","26","27","28","29","32","34","36"],
+      entrada:   ["33","16","24","31","9","35","3","1","20"] },
+    { nome: "PUXAM — N26/22/24", ativo: true, gatilho: "26",
+      tendencia: ["22","24"],
+      neutro:    ["0","2","3","5","7","8","10","12","13","15","16","18","19","21","23","25","27","28","29","31","34","35","36"],
+      entrada:   ["26","0","15","22","18","24","16","29"] },
+    { nome: "PUXAM — N2/4/6/8", ativo: true, gatilho: "2",
+      tendencia: ["4","6","8"],
+      neutro:    ["1","3","5","7","9","10","11","12","13","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","33","34","35","36"],
+      entrada:   ["2","25","4","19","6","27","8","23","0"] }
+]
+var ESTRATEGIAS_SINAIS = [
+    {
+        nome: "SINAL — G0",
+        ativo: true,
+        disparador: "0",
+        principais: ["35","3","26","32"],
+        ocultos:    ["0","15","19","4"],
+        verde:      ["27","13","36","33","16","24","5","22"],
+        fora:       ["1","2","6","7","8","9","10","11","12","14","17","18","20","21","23","25","28","29","30","31","34"]
+    },
+    {
+        nome: "SINAL — G1",
+        ativo: true,
+        disparador: "1",
+        principais: ["27","28","29","24"],
+        ocultos:    ["1","10","19","20"],
+        verde:      ["33","20","14","31","9","17","25","34"],
+        fora:       ["0","2","3","4","5","6","7","8","11","12","13","15","16","18","21","22","23","26","30","32","35","36"]
+    },
+    {
+        nome: "SINAL — G2",
+        ativo: true,
+        disparador: "2",
+        principais: ["4","8","16","9"],
+        ocultos:    ["2","11","20","29"],
+        verde:      ["25","17","34","6","27","13","18","29"],
+        fora:       ["0","1","3","5","7","10","12","14","15","19","21","22","23","24","26","28","30","31","32","33","35","36"]
+    },
+    {
+        nome: "SINAL — G3",
+        ativo: true,
+        disparador: "3",
+        principais: ["26","15","18","32"],
+        ocultos:    ["3","12","21","30"],
+        verde:      ["35","0","19","20","14","1","31","9"],
+        fora:       ["2","4","5","6","7","8","10","11","13","16","17","22","23","24","25","27","28","29","33","34","36"]
+    },
+    {
+        nome: "SINAL — G4",
+        ativo: true,
+        disparador: "4",
+        principais: ["6","8","15","31"],
+        ocultos:    ["4","13","22","14"],
+        verde:      ["21","2","25","17","34","27","35","36"],
+        fora:       ["0","1","3","5","7","9","10","11","12","16","18","19","20","23","24","26","28","29","30","32","33"]
+    },
+    {
+        nome: "SINAL — G5",
+        ativo: true,
+        disparador: "5",
+        principais: ["10","12","13","20"],
+        ocultos:    ["5","14","23","32"],
+        verde:      ["24","16","33","23","8","25","17","34"],
+        fora:       ["0","1","2","3","4","6","7","9","11","15","18","19","21","22","26","27","28","29","30","31","35","36"]
+    },
+    {
+        nome: "SINAL — G6",
+        ativo: true,
+        disparador: "6",
+        principais: ["11","35","16","4"],
+        ocultos:    ["6","15","24","33"],
+        verde:      ["27","13","36","30","8","23","10","5"],
+        fora:       ["0","1","2","3","7","9","12","14","17","18","19","20","21","22","25","26","28","29","31","32","34"]
+    },
+    {
+        nome: "SINAL — G7",
+        ativo: true,
+        disparador: "7",
+        principais: ["14","31","3","6"],
+        ocultos:    ["7","16","25","34"],
+        verde:      ["18","29","22","9","30","8","23","10"],
+        fora:       ["0","1","2","4","5","11","12","13","15","17","19","20","21","24","26","27","28","32","33","35","36"]
+    },
+    {
+        nome: "SINAL — G8",
+        ativo: true,
+        disparador: "8",
+        principais: ["30","31","16","18"],
+        ocultos:    ["8","17","26","35"],
+        verde:      ["23","10","5","24","33","28","12","35"],
+        fora:       ["0","1","2","3","4","6","7","9","11","13","14","15","19","20","21","22","25","27","29","32","34","36"]
+    },
+    {
+        nome: "SINAL — G9",
+        ativo: true,
+        disparador: "9",
+        principais: ["34","35","36","3"],
+        ocultos:    ["9","18","27","33"],
+        verde:      ["27","13","6","11","30","8","23","10"],
+        fora:       ["0","1","2","4","5","7","12","14","15","16","17","19","20","21","22","24","25","26","28","29","31","32"]
+    },
+    {
+        nome: "SINAL — G10",
+        ativo: true,
+        disparador: "10",
+        principais: ["20","5","18","11"],
+        ocultos:    ["10","19","28","1"],
+        verde:      ["16","24","23","8","30","29","7","28"],
+        fora:       ["0","2","3","4","6","9","12","13","14","15","17","21","22","25","26","27","31","32","33","34","35","36"]
+    },
+    {
+        nome: "SINAL — G11",
+        ativo: true,
+        disparador: "11",
+        principais: ["22","33","2","30"],
+        ocultos:    ["11","20","29","5"],
+        verde:      ["8","23","10","5","24","18","29","7"],
+        fora:       ["0","1","3","4","6","9","12","13","14","15","16","17","19","21","25","26","27","28","31","32","34","35","36"]
+    },
+    {
+        nome: "SINAL — G12",
+        ativo: true,
+        disparador: "12",
+        principais: ["24","21","18","14"],
+        ocultos:    ["12","28","30","3"],
+        verde:      ["28","35","3","26","0","21","2","25"],
+        fora:       ["1","4","5","6","7","8","9","10","11","13","15","16","17","19","20","22","23","27","29","31","32","33","34","36"]
+    },
+    {
+        nome: "SINAL — G13",
+        ativo: true,
+        disparador: "13",
+        principais: ["5","6","0","4"],
+        ocultos:    ["13","22","31","2"],
+        verde:      ["27","36","11","30","8","23","10","24"],
+        fora:       ["1","3","7","9","12","14","15","16","17","18","19","20","21","25","26","28","29","32","33","34","35"]
+    },
+    {
+        nome: "SINAL — G14",
+        ativo: true,
+        disparador: "14",
+        principais: ["28","33","9","0"],
+        ocultos:    ["14","23","32","5"],
+        verde:      ["34","6","1","20","31","17","30","8"],
+        fora:       ["2","3","4","7","10","11","12","13","15","16","18","19","21","22","24","25","26","27","29","35","36"]
+    },
+    {
+        nome: "SINAL — G15",
+        ativo: true,
+        disparador: "15",
+        principais: ["2","5","30","32"],
+        ocultos:    ["15","24","33","6"],
+        verde:      ["11","8","23","10","24","16","33","9"],
+        fora:       ["0","1","3","4","7","12","13","14","17","18","19","20","21","22","25","26","27","28","29","31","34","35","36"]
+    },
+    {
+        nome: "SINAL — G16",
+        ativo: true,
+        disparador: "16",
+        principais: ["12","30","20","33"],
+        ocultos:    ["16","25","34","7"],
+        verde:      ["21","2","25","4","17","34","24","5"],
+        fora:       ["0","1","3","6","8","9","10","11","13","14","15","18","19","22","23","26","27","28","29","31","32","35","36"]
+    },
+    {
+        nome: "SINAL — G17",
+        ativo: true,
+        disparador: "17",
+        principais: ["5","34","24","27"],
+        ocultos:    ["17","26","35","8"],
+        verde:      ["25","2","6","13","18","29","7","22"],
+        fora:       ["0","1","3","4","9","10","11","12","14","15","16","19","20","21","23","28","30","31","32","33","36"]
+    },
+    {
+        nome: "SINAL — G18",
+        ativo: true,
+        disparador: "18",
+        principais: ["17","9","3","29"],
+        ocultos:    ["18","27","36","8"],
+        verde:      ["27","13","36","11","30","8","23","10"],
+        fora:       ["0","1","2","4","5","6","7","12","14","15","16","19","20","21","22","24","25","26","28","31","32","33","34","35"]
+    },
+    {
+        nome: "SINAL — G19",
+        ativo: true,
+        disparador: "19",
+        principais: ["9","34","25","18"],
+        ocultos:    ["19","28","1","10"],
+        verde:      ["19","4","21","2","25","17","15","9"],
+        fora:       ["0","3","5","6","7","8","11","12","13","14","16","20","22","23","24","26","27","29","30","31","32","33","35","36"]
+    },
+    {
+        nome: "SINAL — G20",
+        ativo: true,
+        disparador: "20",
+        principais: ["10","5","30","34"],
+        ocultos:    ["20","29","2","11"],
+        verde:      ["17","34","6","27","13","36","11","30"],
+        fora:       ["0","1","3","4","7","8","9","12","14","15","16","18","19","21","22","23","24","25","26","28","31","32","33","35"]
+    },
+    {
+        nome: "SINAL — G21",
+        ativo: true,
+        disparador: "21",
+        principais: ["34","4","5","20"],
+        ocultos:    ["21","30","3","12"],
+        verde:      ["2","25","17","34","6","27","24","16"],
+        fora:       ["0","1","7","8","9","10","11","13","14","15","18","19","22","23","26","28","29","31","32","33","35","36"]
+    },
+    {
+        nome: "SINAL — G22",
+        ativo: true,
+        disparador: "22",
+        principais: ["11","33","32","35"],
+        ocultos:    ["22","31","4","13"],
+        verde:      ["18","29","7","22","9","31","14","2"],
+        fora:       ["0","1","3","5","6","8","10","12","15","16","17","19","20","21","23","24","25","26","27","28","30","34","36"]
+    },
+    {
+        nome: "SINAL — G23",
+        ativo: true,
+        disparador: "23",
+        principais: ["7","14","34","1"],
+        ocultos:    ["23","32","5","16"],
+        verde:      ["10","5","24","23","16","33","27","32"],
+        fora:       ["0","2","3","4","6","8","9","11","12","13","15","17","18","19","20","21","22","25","26","28","29","30","31","35","36"]
+    },
+    {
+        nome: "SINAL — G24",
+        ativo: true,
+        disparador: "24",
+        principais: ["29","34","30","31"],
+        ocultos:    ["24","33","6","15"],
+        verde:      ["4","21","2","24","25","17","34","6"],
+        fora:       ["0","1","3","5","7","8","9","10","11","12","13","14","16","18","19","20","22","23","26","27","28","32","35","36"]
+    },
+    {
+        nome: "SINAL — G25",
+        ativo: true,
+        disparador: "25",
+        principais: ["15","22","12","13"],
+        ocultos:    ["25","34","7","16"],
+        verde:      ["2","11","20","25","29","34","35","22"],
+        fora:       ["0","1","3","4","5","6","8","9","10","14","17","18","19","21","23","24","26","27","28","30","31","32","33","36"]
+    },
+    {
+        nome: "SINAL — G26",
+        ativo: true,
+        disparador: "26",
+        principais: ["25","14","0","27"],
+        ocultos:    ["26","35","8","17"],
+        verde:      ["0","32","15","26","19","4","21","20"],
+        fora:       ["1","2","3","5","6","7","9","10","11","12","13","16","18","22","23","24","28","29","30","31","33","34","36"]
+    },
+    {
+        nome: "SINAL — G27",
+        ativo: true,
+        disparador: "27",
+        principais: ["13","36","11","30"],
+        ocultos:    ["27","8","9","18"],
+        verde:      ["27","13","36","18","11","30","8","23"],
+        fora:       ["0","1","2","3","4","5","6","7","10","12","14","15","16","17","19","20","21","22","24","25","26","28","29","31","32","33","34","35"]
+    },
+    {
+        nome: "SINAL — G28",
+        ativo: true,
+        disparador: "28",
+        principais: ["12","35","3","26"],
+        ocultos:    ["28","1","10","19"],
+        verde:      ["12","35","3","28","26","0","32","15"],
+        fora:       ["2","4","5","6","7","8","9","11","13","14","16","17","18","20","21","22","23","24","25","27","29","30","31","33","34","36"]
+    },
+    {
+        nome: "SINAL — G29",
+        ativo: true,
+        disparador: "29",
+        principais: ["7","28","12","35"],
+        ocultos:    ["29","2","11","20"],
+        verde:      ["27","13","36","29","11","30","8","23"],
+        fora:       ["0","1","3","4","5","6","9","10","14","15","16","17","18","19","21","22","24","25","26","31","32","33","34"]
+    },
+    {
+        nome: "SINAL — G30",
+        ativo: true,
+        disparador: "30",
+        principais: ["8","23","10","5"],
+        ocultos:    ["30","3","12","21"],
+        verde:      ["30","8","23","10","5","24","16","33"],
+        fora:       ["0","1","2","4","6","7","9","11","13","14","15","17","18","19","20","22","25","26","27","28","29","31","32","34","35","36"]
+    },
+    {
+        nome: "SINAL — G31",
+        ativo: true,
+        disparador: "31",
+        principais: ["9","17","34","6"],
+        ocultos:    ["31","4","13","22"],
+        verde:      ["27","13","36","31","11","30","8","23"],
+        fora:       ["0","1","2","3","5","7","10","12","14","15","16","18","19","20","21","24","25","26","28","29","32","33","34","35"]
+    },
+    {
+        nome: "SINAL — G32",
+        ativo: true,
+        disparador: "32",
+        principais: ["15","19","4","21"],
+        ocultos:    ["32","5","14","23"],
+        verde:      ["23","10","5","32","24","16","33","27"],
+        fora:       ["0","1","2","3","6","7","8","9","11","12","13","17","18","20","22","25","26","28","29","30","31","34","35","36"]
+    },
+    {
+        nome: "SINAL — G33",
+        ativo: true,
+        disparador: "33",
+        principais: ["27","13","36","11"],
+        ocultos:    ["33","6","15","24"],
+        verde:      ["27","13","36","33","11","30","8","23"],
+        fora:       ["0","1","2","3","4","5","7","9","10","12","14","16","17","18","19","20","21","22","25","26","28","29","31","32","34","35"]
+    },
+    {
+        nome: "SINAL — G34",
+        ativo: true,
+        disparador: "34",
+        principais: ["6","1","20","14"],
+        ocultos:    ["34","7","16","25"],
+        verde:      ["14","31","9","34","17","6","1","4"],
+        fora:       ["0","2","3","5","8","10","11","12","13","15","18","19","21","22","23","24","26","27","28","29","30","32","33","35","36"]
+    },
+    {
+        nome: "SINAL — G35",
+        ativo: true,
+        disparador: "35",
+        principais: ["3","26","0","32"],
+        ocultos:    ["35","8","17","15"],
+        verde:      ["0","32","15","35","19","4","21","33"],
+        fora:       ["1","2","5","6","7","9","10","11","12","13","14","16","18","20","22","23","24","25","27","28","29","30","31","34","36"]
+    },
+    {
+        nome: "SINAL — G36",
+        ativo: true,
+        disparador: "36",
+        principais: ["11","30","8","23"],
+        ocultos:    ["36","9","18","27"],
+        verde:      ["27","13","36","11","30","8","23","10"],
+        fora:       ["0","1","2","3","4","5","6","7","12","14","15","16","17","19","20","21","22","24","25","26","28","29","31","32","33","34","35"]
+    }
+]
+
+// ══════════════════════════════════════════════════════════
+// CONSTANTES
+// ══════════════════════════════════════════════════════════
+var RODA     = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26]
+var VERMELHOS= [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
+
+// ══════════════════════════════════════════════════════════
+// CONFIG (igual extensão)
+// ══════════════════════════════════════════════════════════
+var cfgBot = {
+    maxJanelaGatilho:5, modoPrincipal:true, modo7fichas:false, modoConf:false, ativSinais:true,
+    filtroTendencia:true, minTendenciaHist:2, janelaTendencia:10,
+    filtroScore:true, scoreMinEntrada:30, filtroOposto:true, maxOpostoAtivo:4, janelaOposto:8,
+    alertaSinalFraco:true, confClassicas:1, confTendObrig:1, confJanela:8,
+    minSinalVerde:3, minFora:3, janelaSignal:10, cooldownSinal:4,
+    zeroSempreGreen:true, cobrirZero:false, autoZero:false,
+    protecaoAtiva:true, protecaoMinNums:6, protecaoVizinhos:1,
+    gale:1, autoApostar:false, autoDelay:50, autoGale:1, alertaSom:true,
+    min7Tendencia:4, janela7:15,
+    elite2x:true,quartaDim:true,formula5x:true,black:true,quadrantes:true,
+    ativInvertidos:true,ativFixosT0:true,ativFixosT11:true,ativFixosT7:true,
+    ativSeChamam:true,ativPoucasFichas:true,ativGatilhosPerfeitos:true,ativSePuxam:true
+}
+
+// ══════════════════════════════════════════════════════════
+// ESTADO (igual extensão)
+// ══════════════════════════════════════════════════════════
+var historicoNumeros = []
+var historicoJogadas = []
+var estadoAtual = {fase:'aguardando',estrategia:null,contConf:0,numerosApostados:[],passo:0}
+var estadosSinais = {}, estadoSinalAposta = null, aguardarSinal = 0
+var acertos=0,erros=0,galeAtual=0,fibIndex=0
+var acertosSinais=0,errosSinais=0,galeSinalAtual=0
+var _scorePorGatilho = {}, statsGatilho = {}
+var COOLDOWN_SINAL_RED=4, COOLDOWN_SINAL_GREEN=2
+var saldoInicial=null, saldoAtual=null
+var iniciado=false, metaParada=false
+var ultimaSeqIframe=''
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function corNum(n){var i=parseInt(n);if(i===0)return'z';return VERMELHOS.indexOf(i)!==-1?'v':'p'}
+function nEl(n,hi){return'<div class="n '+corNum(n)+(hi?' hi':'')+'">'+n+'</div>'}
+
+function ehClassica(nome){
+    var n=(nome||'').toLowerCase().replace(/[áàãâä]/g,'a').replace(/[éèêë]/g,'e')
+        .replace(/[íìîï]/g,'i').replace(/[óòõôö]/g,'o').replace(/[úùûü]/g,'u').replace(/ç/g,'c')
+    return n.indexOf('elite 2x')!==-1||n.indexOf('quarta dim')!==-1||n.indexOf('dimensao')!==-1||
+           n.indexOf('formula 5x')!==-1||n.indexOf('padrao black')!==-1||n.indexOf('black')!==-1||
+           n.indexOf('quadrante')!==-1
+}
+
+// Stubs para funções que a extensão usa mas não existem no web
+function mostrarComHistorico(h,c){renderStatusCard();atualizarPlacar();atualizarRecentes()}
+function mostrar(h,c){renderStatusCard();atualizarPlacar();atualizarRecentes()}
+function criarDisplay(){}
+function carregarCfgStorage(){carregarCfgLocal()}
+function salvarEstadoStorage(){try{localStorage.setItem('atlasHist',JSON.stringify(historicoNumeros.slice(0,50)))}catch(e){}}
+function enviarSinalTelegram(){}
+function iniciarObservadorSaldo(){}
+function verificarStopPorSaldo(){}
+function atualizarBarraSaldo(){atualizarSaldoUI()}
+function registrarStatGatilho(g,ok){var k=String(g);if(!statsGatilho[k])statsGatilho[k]={acertos:0,erros:0};if(ok)statsGatilho[k].acertos++;else statsGatilho[k].erros++}
+
+function tocarSom(ok){
+    if(!cfgBot.alertaSom)return
+    try{var ctx=new(window.AudioContext||window.webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=ok?880:220;g.gain.value=0.08;o.start();o.stop(ctx.currentTime+0.12)}catch(e){}
+}
+
+function apostarAutomatico(zonas,mult){
+    if(!cfgBot.autoApostar)return
+    var fr=document.getElementById('game-frame')
+    if(!fr||!fr.contentWindow)return
+    try{fr.contentWindow.postMessage({tipo:'ATLAS_APOSTAR',zonas:zonas,delay:cfgBot.autoDelay||50,mult:mult||1,id:Date.now()},'*')}catch(e){}
+}
+function cancelarApostaAutomatica(){
+    var fr=document.getElementById('game-frame')
+    if(fr&&fr.contentWindow)try{fr.contentWindow.postMessage({tipo:'ATLAS_CANCELAR'},'*')}catch(e){}
+}
+
+// ══════════════════════════════════════════════════════════
+// FUNÇÕES DE ANÁLISE (portadas da extensão)
+// ══════════════════════════════════════════════════════════
+
+function tendenciaAtiva(tendencia, seq, janela, minVistas) {
+        if (!cfgBot.filtroTendencia) return true
+        if (!tendencia || !tendencia.length) return true   // sem tendência definida = passa
+        var jan   = seq.slice(0, janela || cfgBot.janelaTendencia || 10)
+        var vistas = {}
+        jan.forEach(function(n) { if (tendencia.indexOf(String(n)) !== -1) vistas[n] = true })
+        return Object.keys(vistas).length >= (minVistas || cfgBot.minTendenciaHist || 2)
+    }
+
+function setorOpostoCalmo(oposto, seq) {
+        if (!cfgBot.filtroOposto) return true
+        if (!oposto || !oposto.length) return true
+        var jan = seq.slice(0, cfgBot.janelaOposto || 8)
+        var cnt = 0
+        jan.forEach(function(n) { if (oposto.indexOf(String(n)) !== -1) cnt++ })
+        return cnt <= (cfgBot.maxOpostoAtivo || 4)
+    }
+
+function calcularForcaSinal(e, seq) {
+        var pts = 0
+        var detalhes = []
+
+        var _nc2 = (e.nome || '').toLowerCase()
+            .replace(/[áàãâä]/g,'a').replace(/[éèêë]/g,'e')
+            .replace(/[íìîï]/g,'i').replace(/[óòõôö]/g,'o')
+            .replace(/[úùûü]/g,'u').replace(/[ç]/g,'c')
+        var _ehCl = (
+            _nc2.indexOf('elite 2x')     !== -1 ||
+            _nc2.indexOf('quarta dim')   !== -1 ||
+            _nc2.indexOf('dimensao')     !== -1 ||
+            _nc2.indexOf('formula 5x')  !== -1 ||
+            _nc2.indexOf('padrao black') !== -1 ||
+            _nc2.indexOf('black')        !== -1 ||
+            _nc2.indexOf('quadrante')    !== -1
+        )
+
+        // Tendência — só para clássicas
+        if (_ehCl) {
+            var tend = e.tendencia || []
+            if (tend.length > 0) {
+                var tendAtiva = tendenciaAtiva(tend, seq, cfgBot.janelaTendencia, cfgBot.minTendenciaHist)
+                if (tendAtiva) { pts += 40; detalhes.push('tend✅') }
+                else           { detalhes.push('tend❌') }
+            } else {
+                pts += 40
+                detalhes.push('tend➖')
+            }
+            // Setor oposto — só para clássicas
+            var neutro = e.neutro || []
+            if (neutro.length > 0) {
+                var opostoCalmo = setorOpostoCalmo(neutro, seq)
+                if (opostoCalmo) { pts += 30; detalhes.push('oposto✅') }
+                else             { detalhes.push('oposto❌') }
+            } else {
+                pts += 30
+                detalhes.push('oposto➖')
+            }
+        } else {
+            // PDFs e Sinais: não penaliza por tendência/oposto
+            pts += 70
+            detalhes.push('tend➖ oposto➖')
+        }
+
+        // Score histórico — vale para todos (mín 5 entradas para contar)
+        var score = scoreGatilho(e.gatilho || e.disparador, 5)
+        if (score === -1) {
+            pts += 15   // sem histórico suficiente = neutro
+            detalhes.push('score➖')
+        } else if (score >= (cfgBot.scoreMinEntrada || 30)) {
+            pts += 30; detalhes.push('score✅' + score + '%')
+        } else {
+            detalhes.push('score❌' + score + '%')
+        }
+
+        return { pts: pts, detalhes: detalhes.join(' ') }
+    }
+
+function podeEntrar(e, seq) {
+        var f = calcularForcaSinal(e, seq)
+
+        // Normaliza nome para detecção de tipo
+        var _nc = (e.nome || '').toLowerCase()
+            .replace(/[áàãâä]/g,'a').replace(/[éèêë]/g,'e')
+            .replace(/[íìîï]/g,'i').replace(/[óòõôö]/g,'o')
+            .replace(/[úùûü]/g,'u').replace(/[ç]/g,'c')
+        var _ehClassica = (
+            _nc.indexOf('elite 2x')     !== -1 ||
+            _nc.indexOf('quarta dim')   !== -1 ||
+            _nc.indexOf('dimensao')     !== -1 ||
+            _nc.indexOf('formula 5x')  !== -1 ||
+            _nc.indexOf('padrao black') !== -1 ||
+            _nc.indexOf('black')        !== -1 ||
+            _nc.indexOf('quadrante')    !== -1
+        )
+
+        // Filtro 1: tendência — SOMENTE para clássicas que têm tendencia[] bem definida
+        if (cfgBot.filtroTendencia && _ehClassica) {
+            var tend = e.tendencia || []
+            if (tend.length > 0 && !tendenciaAtiva(tend, seq, cfgBot.janelaTendencia, cfgBot.minTendenciaHist)) {
+                return { pode: false, forca: f.pts, motivo: 'tendência inativa', detalhes: f.detalhes }
+            }
+        }
+
+        // Filtro 2: setor oposto muito ativo — SOMENTE para clássicas
+        if (cfgBot.filtroOposto && _ehClassica) {
+            var neutro = e.neutro || []
+            if (neutro.length > 0 && !setorOpostoCalmo(neutro, seq)) {
+                return { pode: false, forca: f.pts, motivo: 'oposto ativo (' +
+                    seq.slice(0, cfgBot.janelaOposto||8).filter(function(n){
+                        return (e.neutro||[]).indexOf(String(n)) !== -1
+                    }).length + ' nums)', detalhes: f.detalhes }
+            }
+        }
+
+        // Filtro 3: score histórico — exige mín 5 entradas para confiar no score
+        if (cfgBot.filtroScore && cfgBot.scoreMinEntrada > 0) {
+            var sc = scoreGatilho(e.gatilho || e.disparador, 5)  // mín 5 entradas
+            if (sc !== -1 && sc < cfgBot.scoreMinEntrada) {
+                return { pode: false, forca: f.pts, motivo: 'score baixo ' + sc + '%', detalhes: f.detalhes }
+            }
+        }
+
+        return { pode: true, forca: f.pts, motivo: '', detalhes: f.detalhes }
+    }
+
+function obterAtivas() {
+        if (!cfgBot.modoPrincipal) return []
+        var base = (typeof ESTRATEGIAS !== 'undefined' ? ESTRATEGIAS : []).filter(function(e) {
+            if (!e.ativo) return false
+            var n = (e.nome || '').toUpperCase()
+            // ── Estratégias clássicas ──
+            if (n.indexOf('ELITE 2X') !== -1    && cfgBot.elite2x    === false) return false
+            if (n.indexOf('QUARTA D') !== -1    && cfgBot.quartaDim  === false) return false
+            if (n.indexOf('ORMULA 5') !== -1    && cfgBot.formula5x  === false) return false
+            if (n.indexOf('BLACK') !== -1       && cfgBot.black      === false) return false
+            if (n.indexOf('QUADRANTE') !== -1   && cfgBot.quadrantes === false) return false
+            // ── Estratégias dos PDFs — filtro individual ──
+            if (n.indexOf('INVERTIDO') !== -1   && cfgBot.ativInvertidos        === false) return false
+            if (n.indexOf('FIXOS') !== -1) {
+                if (n.indexOf('T0') !== -1      && cfgBot.ativFixosT0           === false) return false
+                if (n.indexOf('T10') !== -1     && cfgBot.ativFixosT0           === false) return false
+                if (n.indexOf('T20') !== -1     && cfgBot.ativFixosT0           === false) return false
+                if (n.indexOf('T30') !== -1     && cfgBot.ativFixosT0           === false) return false
+                if (n.indexOf('T11') !== -1     && cfgBot.ativFixosT11          === false) return false
+                if (n.indexOf('T22') !== -1     && cfgBot.ativFixosT11          === false) return false
+                if (n.indexOf('T33') !== -1     && cfgBot.ativFixosT11          === false) return false
+                if (n.indexOf('T7') !== -1      && cfgBot.ativFixosT7           === false) return false
+                if (n.indexOf('T17') !== -1     && cfgBot.ativFixosT7           === false) return false
+                if (n.indexOf('T27') !== -1     && cfgBot.ativFixosT7           === false) return false
+            }
+            if (n.indexOf('SE CHAMAM') !== -1   && cfgBot.ativSeChamam          === false) return false
+            if (n.indexOf('POUCAS FICHAS') !== -1 && cfgBot.ativPoucasFichas    === false) return false
+            if (n.indexOf('GATILHO') !== -1     && cfgBot.ativGatilhosPerfeitos === false) return false
+            if (n.indexOf('PUXAM') !== -1       && cfgBot.ativSePuxam           === false) return false
+            return true
+        })
+        var custom = (estrategiasCustom || []).filter(function(e){ return e.ativo })
+        return base.concat(custom)
+    }
+
+function obterAtivas7() {
+        if (!cfgBot.modo7fichas) return []
+        return (typeof ESTRATEGIAS_7 !== 'undefined' ? ESTRATEGIAS_7 : []).filter(function(e) {
+            return e.ativo !== false
+        })
+    }
+
+function scoreGatilho(gatilho, minTotal) {
+        var k = String(gatilho)
+        var s = _scorePorGatilho[k]
+        if (!s || s.total < (minTotal || 3)) return -1
+        return Math.round(s.wins / s.total * 100)
+    }
+
+function registrarScoreGatilho(gatilho, ganhou) {
+        var k = String(gatilho)
+        if (!_scorePorGatilho[k]) _scorePorGatilho[k] = { wins: 0, total: 0 }
+        _scorePorGatilho[k].total++
+        if (ganhou) _scorePorGatilho[k].wins++
+    }
+
+function registrarStatGatilho(gatilho, ganhou) {
+        if (!gatilho) return
+        if (!statsGatilho[gatilho]) statsGatilho[gatilho] = { acertos: 0, erros: 0 }
+        if (ganhou) statsGatilho[gatilho].acertos++
+        else statsGatilho[gatilho].erros++
+    }
+
+function zonasComZero(zonas) {
+        var z = zonas.slice()
+        if (cfgBot.cobrirZero || cfgBot.autoZero) {
+            if (z.indexOf('0') === -1) z.push('0')
+        }
+        return z
+    }
+
+function zonasComProtecao(zonas, nomeEstrategia) {
+        // 1. Começa com a entrada normal + zero (sempre inclui se cobrirZero/autoZero ativos)
+        var base = zonasComZero(zonas)
+        // Zero sempre na lista quando proteção de zero está ativa
+        if ((cfgBot.cobrirZero || cfgBot.autoZero) && base.indexOf('0') === -1) {
+            base.push('0')
+        }
+
+        // 2. Só aplica proteção se ativa e entrada menor que o mínimo configurado
+        if (!cfgBot.protecaoAtiva) return base
+        if (base.length >= cfgBot.protecaoMinNums) return base
+
+        var nViz   = cfgBot.protecaoVizinhos || 1
+        var janela = Math.min(20, historicoNumeros.length)
+        var recentes = historicoNumeros.slice(0, janela)
+
+        // 3. Conta frequência dos últimos números (excluindo os já na entrada)
+        var baseSet = {}
+        base.forEach(function(n){ baseSet[n] = true })
+
+        var freq = {}
+        recentes.forEach(function(n) {
+            if (!baseSet[n]) freq[n] = (freq[n] || 0) + 1
+        })
+
+        // 4. Candidatos: vizinhos na roda de cada número da entrada que não estão na entrada
+        var candidatos = {}
+        base.forEach(function(n) {
+            var idx = _rodaP.indexOf(parseInt(n))
+            if (idx === -1) return
+            for (var d = -nViz; d <= nViz; d++) {
+                if (d === 0) continue
+                var viz = String(_rodaP[(idx + d + _rodaP.length) % _rodaP.length])
+                if (!baseSet[viz]) candidatos[viz] = true
+            }
+        })
+
+        // 5. Ordena candidatos: primeiro os que aparecem mais no histórico recente
+        var candidatosArr = Object.keys(candidatos)
+        candidatosArr.sort(function(a, b) {
+            return (freq[b] || 0) - (freq[a] || 0)
+        })
+
+        // 6. Adiciona candidatos até atingir o mínimo (ou acabar os candidatos)
+        var resultado = base.slice()
+        var adicionados = []
+        for (var ci = 0; ci < candidatosArr.length; ci++) {
+            if (resultado.length >= cfgBot.protecaoMinNums) break
+            resultado.push(candidatosArr[ci])
+            adicionados.push(candidatosArr[ci])
+        }
+
+        if (adicionados.length > 0) {
+            console.log('[Atlas IA] Proteção: adicionados ' + adicionados.join(',') + ' à entrada de ' + (nomeEstrategia||'?'))
+        }
+        return resultado
+    }
+
+function analisarHistorico(seq) {
+        var ativas = obterAtivas()
+        if (!ativas.length || !seq || seq.length < 1) return null
+
+        var JANELA = cfgBot.maxJanelaGatilho || 5
+        var jan    = seq.slice(0, JANELA)
+        // Cronológico: [mais antigo → mais recente]
+        var cronol = jan.slice().reverse()
+
+        var melhor = null  // estratégia com gatilho mais recente
+
+        for (var ei = 0; ei < ativas.length; ei++) {
+            var e       = ativas[ei]
+            var gatilho = String(e.gatilho)
+            var entrada = e.entrada || []
+
+            // Encontrar gatilho na janela (do mais antigo para mais recente)
+            var idxG = -1
+            for (var gi = 0; gi < cronol.length; gi++) {
+                if (String(cronol[gi]) === gatilho) { idxG = gi; break }
+            }
+            if (idxG === -1) continue
+
+            // Verificar se entrada caiu APÓS o gatilho (invalida)
+            var contaminada = false
+            for (var ci = idxG + 1; ci < cronol.length; ci++) {
+                if (entrada.indexOf(String(cronol[ci])) !== -1) { contaminada = true; break }
+            }
+            if (contaminada) continue
+
+            // Verificação de tendência mínima para PDFs com exigirTend=true
+            // (INVERTIDOS, POUCAS FICHAS, etc — exige 1 tend antes de ativar)
+            if (e.exigirTend) {
+                var _tend = e.tendencia || []
+                var _janTend = cfgBot.janelaTendencia || 10
+                var _janAtual = seq.slice(0, _janTend)
+                var _temTend = _janAtual.some(function(n) {
+                    return _tend.indexOf(String(n)) !== -1
+                })
+                if (!_temTend) continue  // tendência não apareceu ainda — ignora
+            }
+
+            // Filtros de precisão
+            var filtro = podeEntrar(e, seq)
+
+            // Gatilho válido — prioriza o mais recente (maior idxG no cronol)
+            // Desempata pelo maior score (sinal mais forte)
+            if (!melhor || idxG > melhor.idxG ||
+                (idxG === melhor.idxG && filtro.forca > (melhor.forca || 0))) {
+                melhor = { fase: filtro.pode ? 'contando' : 'bloqueado',
+                    estrategia: e, passo: 1, idxG: idxG, entrada: entrada,
+                    forca: filtro.forca, motivo: filtro.motivo, detalhes: filtro.detalhes,
+                    filtrado: !filtro.pode }
+            }
+        }
+
+        if (melhor) {
+            if (melhor.filtrado) {
+                // Filtrado: comportamento depende da config
+                // alertaSinalFraco=true → mostra aviso mas NÃO entra (aguarda filtro passar)
+                // alertaSinalFraco=false → entra mesmo assim com aviso visual
+                if (cfgBot.alertaSinalFraco) {
+                    // Retorna como 'aguardando' especial — mostra o motivo do bloqueio
+                    return {
+                        fase: 'aguardando',
+                        estrategia: melhor.estrategia,
+                        bloqueado: true,
+                        motivo: melhor.motivo,
+                        forca: melhor.forca,
+                        detalhes: melhor.detalhes
+                    }
+                } else {
+                    melhor.fase = 'contando'
+                    melhor.sinalFraco = true
+                }
+            }
+            return melhor
+        }
+        return { fase: 'aguardando', estrategia: null }
+    }
+
+function analisarHistorico7Fichas(seq) {
+        var ativas = obterAtivas7()
+        if (!ativas.length || !seq || seq.length < 5) return null
+        var minT   = cfgBot.min7Tendencia || 4
+        var JANELA = cfgBot.janela7       || 15
+        var jan    = seq.slice(0, JANELA)
+        var melhor7Pronta  = null
+        var melhor7Contando = null
+        for (var ei = 0; ei < ativas.length; ei++) {
+            var e = ativas[ei]
+            var tend = e.tendencia || []
+            var alvo = e.alvo     || []
+            var tendVistas = {}
+            jan.forEach(function(n) { if (tend.indexOf(n) !== -1) tendVistas[n] = true })
+            var cntT = Object.keys(tendVistas).length
+            if (cntT >= minT) {
+                if (!melhor7Pronta || cntT > melhor7Pronta.cntT) {
+                    melhor7Pronta = { fase: "apostando", estrategia: e, cntT: cntT, minT: minT, entrada: alvo }
+                }
+            } else if (cntT >= 1) {
+                if (!melhor7Contando || cntT > melhor7Contando.cntT) {
+                    melhor7Contando = { fase: "contando", estrategia: e, cntT: cntT, minT: minT, entrada: alvo }
+                }
+            }
+        }
+        if (melhor7Pronta) return melhor7Pronta
+        if (melhor7Contando) return melhor7Contando
+        return { fase: "aguardando", estrategia: null, cntT: 0 }
+    }
+
+function analisarSinais(seq) { return null }
+
+function analisarCombinado(seq) {
+        // SINAIS rodam em paralelo via processarNumeroSinal() — NÃO passam por aqui
+        var res7      = cfgBot.modo7fichas              ? analisarHistorico7Fichas(seq) : null
+        var resNormal = cfgBot.modoPrincipal !== false  ? analisarHistorico(seq)        : null
+        var resConf   = cfgBot.modoConf                 ? analisarConfirmacao(seq)      : null
+
+        // Prioridade: 7Fichas > Normal > Confirmação
+        if (res7      && res7.fase      === 'apostando') return res7
+        if (resNormal && resNormal.fase === 'apostando') return resNormal
+        if (resConf   && resConf.fase   === 'apostando') return resConf
+
+        if (res7      && res7.fase      === 'contando') return res7
+        if (resNormal && resNormal.fase === 'contando') return resNormal
+        if (resConf   && resConf.fase   === 'contando') return resConf
+
+        return { fase: 'aguardando', estrategia: null }
+    }
+
+function processarNumeroSinal(num) {
+        if (!cfgBot.ativSinais) return
+        if (typeof ESTRATEGIAS_SINAIS === 'undefined' || !ESTRATEGIAS_SINAIS.length) return
+
+        var minV   = cfgBot.minSinalVerde || 3
+        var minF   = cfgBot.minFora       || 3
+        var JANELA = cfgBot.janelaSignal  || 10
+        var numStr = String(num)
+        var agora  = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' })
+
+        // ── 1. SE ESTÁ APOSTANDO: verifica resultado ──────────────────────────
+        if (estadoSinalAposta) {
+            var aposta = estadoSinalAposta
+
+            var _zeroGreenSinal = numStr === '0' && cfgBot.zeroSempreGreen
+            if (_zeroGreenSinal || aposta.numerosApostados.indexOf(numStr) !== -1) {
+                // ✅ GANHOU
+                acertosSinais++
+                galeSinalAtual = 0
+                registrarStatGatilho('S' + (aposta.estrategia ? aposta.estrategia.disparador : ''), true)
+                historicoJogadas.unshift({
+                    resultado: 'win', num: numStr,
+                    estrategia: aposta.estrategia ? aposta.estrategia.nome : '',
+                    hora: agora
+                })
+                enviarSinalTelegram({ fase: 'ganhou', numero: numStr, acertos: acertosSinais, erros: errosSinais })
+                if (cfgBot.alertaSom) tocarSom(true)
+                estadoSinalAposta = null
+                estadosSinais     = {}        // limpa todos disparadores ativos
+                aguardarSinal     = COOLDOWN_SINAL_GREEN
+                _displaySinalTemp(
+                    '✅ <b style="color:#00ff88">SINAL GANHOU!</b>  ' +
+                    '<b style="color:#ffff00;font-size:16px">' + numStr + '</b><br>' +
+                    '<span style="color:#888;font-size:10px">' + (aposta.estrategia ? aposta.estrategia.nome : '') + '</span>  ' +
+                    '📊 ✅<b style="color:#00ff88">' + acertosSinais + '</b> ❌<b style="color:#ff3366">' + errosSinais + '</b>',
+                    '#00ff88', 3000
+                )
+                salvarEstadoStorage()
+                return
+
+            } else {
+                // Não ganhou: gale ou loss
+                var limiteGale = cfgBot.gale || 1
+                if (galeSinalAtual < limiteGale) {
+                    galeSinalAtual++
+                    var mult = Math.pow(2, galeSinalAtual)
+                    apostarAutomatico(aposta.numerosApostados, mult)
+                    enviarSinalTelegram({ fase: 'gale', numero: numStr, gale: galeSinalAtual, acertos: acertosSinais, erros: errosSinais })
+                    _displaySinalTemp(
+                        '⚡ <b style="color:#ffaa00">SINAL GALE ' + galeSinalAtual + '</b>  saiu: <b>' + numStr + '</b><br>' +
+                        '<span style="color:#607d8b;font-size:10px">mantendo aposta — x' + mult + ' fichas</span>',
+                        '#ffaa00', 0
+                    )
+                    salvarEstadoStorage()
+                    return
+                }
+                // ❌ PERDEU — cooldown 4 giros
+                errosSinais++
+                galeSinalAtual = 0
+                registrarStatGatilho('S' + (aposta.estrategia ? aposta.estrategia.disparador : ''), false)
+                historicoJogadas.unshift({
+                    resultado: 'loss', num: numStr,
+                    estrategia: aposta.estrategia ? aposta.estrategia.nome : '',
+                    hora: agora
+                })
+                enviarSinalTelegram({ fase: 'perdeu', numero: numStr, acertos: acertosSinais, erros: errosSinais })
+                estadoSinalAposta = null
+                estadosSinais     = {}        // limpa tudo — reinicia do zero
+                aguardarSinal     = COOLDOWN_SINAL_RED   // 4 giros de cooldown
+                _displaySinalTemp(
+                    '❌ <b style="color:#ff3366">SINAL PERDEU!</b>  ' +
+                    '<b style="color:#ffff00;font-size:16px">' + numStr + '</b><br>' +
+                    '<span style="color:#607d8b;font-size:10px">aguardando ' + COOLDOWN_SINAL_RED + ' giros para reiniciar análise</span>  ' +
+                    '📊 ✅<b style="color:#00ff88">' + acertosSinais + '</b> ❌<b style="color:#ff3366">' + errosSinais + '</b>',
+                    '#ff3366', 4000
+                )
+                salvarEstadoStorage()
+                return
+            }
+        }
+
+        // ── 2. COOLDOWN: conta giros e bloqueia abertura de novos disparadores ──
+        if (aguardarSinal > 0) {
+            aguardarSinal--
+            // Mostra quanto tempo falta no cooldown
+            _atualizarBarraSinalCooldown()
+            return
+        }
+
+        // ── 3. EXPIRAÇÃO DE JANELA ─────────────────────────────────────────────
+        Object.keys(estadosSinais).forEach(function(disp) {
+            var st = estadosSinais[disp]
+            st.girosAposDisp = (st.girosAposDisp || 0) + 1
+            if (st.girosAposDisp > JANELA) {
+                delete estadosSinais[disp]
+            }
+        })
+
+        // ── 4. PROCESSA NÚMERO ────────────────────────────────────────────────
+        var entrou = false
+
+        for (var ei = 0; ei < ESTRATEGIAS_SINAIS.length; ei++) {
+            var e    = ESTRATEGIAS_SINAIS[ei]
+            if (!e.ativo) continue
+            var disp = String(e.disparador)
+
+            // 4a. Número É o disparador → abre/reinicia estado
+            if (numStr === disp) {
+                estadosSinais[disp] = { estrategia: e, contVerde: 0, contFora: 0, girosAposDisp: 0 }
+                continue
+            }
+
+            // 4b. Sem estado ativo para este disparador → ignora
+            var st = estadosSinais[disp]
+            if (!st) continue
+
+            var bloqueadores = (e.principais || []).concat(e.ocultos || [])
+
+            // 4c. Caiu PRINCIPAL ou OCULTO → cancela este disparador
+            if (bloqueadores.indexOf(numStr) !== -1) {
+                delete estadosSinais[disp]
+                continue
+            }
+
+            // 4d. Conta verde ou fora
+            var verdeList = e.verde || []
+            var foraList  = e.fora  || []
+            if (verdeList.indexOf(numStr) !== -1)     st.contVerde++
+            else if (foraList.indexOf(numStr) !== -1) st.contFora++
+
+            // 4e. Confirmou! → ENTRA
+            if (!entrou && st.contVerde >= minV && st.contFora >= minF) {
+                var entradaArr = (e.principais || []).concat(e.ocultos || [])
+                var entSet = {}
+                entradaArr.forEach(function(n){ entSet[n] = true })
+                var zonasAp = zonasComProtecao(Object.keys(entSet), e.nome)
+
+                estadoSinalAposta = {
+                    estrategia: e,
+                    numerosApostados: zonasAp,
+                    contVerde: st.contVerde,
+                    contFora:  st.contFora,
+                    minV: minV, minF: minF
+                }
+                galeSinalAtual = 0
+                delete estadosSinais[disp]
+                entrou = true
+
+                if (cfgBot.alertaSom) tocarSom(false)
+                apostarAutomatico(zonasAp)
+                enviarSinalTelegram({
+                    fase: 'apostando', nome: e.nome, gatilho: e.disparador,
+                    numeros: zonasAp, acertos: acertosSinais, erros: errosSinais
+                })
+
+                // Display da aposta do sinal — só sobrescreve o principal se ele estiver aguardando
+                var bVe = '', bFe = ''
+                for (var iv = 0; iv < minV; iv++) bVe += (iv < st.contVerde ? '🟢' : '⚪')
+                for (var jf = 0; jf < minF; jf++) bFe += (jf < st.contFora  ? '🟡' : '⚪')
+
+                if (estadoAtual.fase === 'aguardando' || estadoAtual.fase === 'contando') {
+                    mostrarComHistorico(
+                        '🚀 <b style="color:#00ff88;font-size:14px">APOSTE AGORA!</b>' +
+                        ' <span style="background:rgba(0,229,255,.15);color:#00e5ff;font-size:9px;padding:1px 5px;border-radius:3px">SINAL ✅</span><br>' +
+                        '🎯 <b style="color:#00e5ff">' + e.nome + '</b>' +
+                        '  <span style="color:#607d8b;font-size:9px">disparo: <b style="color:#ffd700">' + (e.disparador||'') + '</b></span><br>' +
+                        bVe + ' <b style="color:#00ff88">' + st.contVerde + '/' + minV + '</b> verde  ' +
+                        bFe + ' <b style="color:#ffaa00">' + st.contFora  + '/' + minF + '</b> fora<br>' +
+                        '💰 <b style="color:#ffff00">' + zonasAp.join(' · ') + '</b>',
+                        '#003300'
+                    )
+                }
+                salvarEstadoStorage()
+                // continua loop para processar outros disparadores (contar verde/fora), mas não entra mais
+            }
+        }
+
+        // ── 5. Atualiza barra de progresso dos sinais ativos ──────────────────
+        if (!entrou) _atualizarBarraSinalProgresso()
+    }
+
+function processarNumero(num) {
+        var cfg = cfgBot
+        var agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+        // ── MODO SINAIS: processa SEMPRE, independente do estado principal ──
+        // Tem estado próprio — não bloqueia nem é bloqueado pelo fluxo abaixo
+        processarNumeroSinal(num)
+
+        // ── VERIFICAR STOP POR SALDO ──
+        verificarStopPorSaldo()
+
+        // ── VERIFICAR META ──
+        if (cfg.metaAtiva && !metaParada) {
+            if (acertos >= cfg.stopWin) {
+                metaParada = true
+                estadoAtual = { fase: 'aguardando', estrategia: null, contConf: 0, numerosApostados: [] }
+                mostrarComHistorico(
+                    '🏆 <b style="color:#00ff88;font-size:14px">META WIN ATINGIDA!</b><br>' +
+                    '✅ <b>' + acertos + '</b> acertos — Pare de jogar por hoje!<br>' +
+                    '🔒 Bot pausado. Recarregue para reiniciar.',
+                    '#00ff88'
+                )
+                salvarEstadoStorage()
+                return
+            }
+            if (erros >= cfg.stopLoss) {
+                metaParada = true
+                estadoAtual = { fase: 'aguardando', estrategia: null, contConf: 0, numerosApostados: [] }
+                mostrarComHistorico(
+                    '🛑 <b style="color:#ff3366;font-size:14px">STOP LOSS ATINGIDO!</b><br>' +
+                    '❌ <b>' + erros + '</b> erros — Pare de jogar por hoje!<br>' +
+                    '🔒 Bot pausado. Recarregue para reiniciar.',
+                    '#ff3366'
+                )
+                salvarEstadoStorage()
+                return
+            }
+        }
+        if (metaParada) return  // bot pausado por meta
+
+        // ── BLOQUEIO PÓS-RESULTADO: aguarda 2 giros limpos ──
+        if (aguardarProximoGiro > 0) {
+            aguardarProximoGiro--
+            if (aguardarProximoGiro > 0) {
+                mostrarComHistorico(
+                    '\u231B <b style="color:#4a6080">Limpando janela...</b><br>' +
+                    '\u{1F4CA} \u2705 ' + acertos + ' | \u274C ' + erros,
+                    '#0d1020'
+                )
+            } else {
+                mostrarComHistorico(
+                    '\u{1F50D} <b style="color:#607d8b">Aguardando gatilho...</b><br>' +
+                    '\u{1F4CA} \u2705 ' + acertos + ' | \u274C ' + erros,
+                    '#1a2030'
+                )
+            }
+            salvarEstadoStorage()
+            return
+        }
+
+        // ── APOSTANDO ──
+        if (estadoAtual.fase === 'apostando') {
+            // Guard: numerosApostados pode ser null se estado corrompido
+            if (!estadoAtual.numerosApostados || !estadoAtual.estrategia) {
+                estadoAtual = { fase: 'aguardando', estrategia: null, contConf: 0, numerosApostados: [] }
+                return
+            }
+            // Zero universal: se zeroSempreGreen ativo, 0 cair enquanto apostando = sempre GREEN
+            var _zeroGreen = String(num) === '0' && cfgBot.zeroSempreGreen
+            if (_zeroGreen || estadoAtual.numerosApostados.indexOf(num) !== -1) {
+                acertos++; galeAtual = 0; fibIndex = Math.max(0, fibIndex - 2)
+                var eNome = estadoAtual.estrategia ? estadoAtual.estrategia.nome : ''
+                var eGat  = estadoAtual.estrategia ? estadoAtual.estrategia.gatilho : null
+                registrarStatGatilho(eGat, true)
+                registrarScoreGatilho(eGat, true)
+                historicoJogadas.unshift({ resultado: 'win', num: num, estrategia: eNome, hora: agora })
+                // Reset completo — cancela qualquer aposta pendente
+                cancelarApostaAutomatica()
+                estadoAtual = { fase: 'aguardando', estrategia: null, contConf: 0, numerosApostados: [], passo: 0 }
+                galeAtual = 0
+                aguardarProximoGiro = 2     // bloqueia 2 giros para limpar janela
+                if (cfgBot.alertaSom) tocarSom(true)
+                enviarSinalTelegram({ fase: 'ganhou', numero: num, acertos: acertos, erros: erros })
+                mostrarComHistorico(
+                    '✅ <b>GANHOU!</b> Número: <b style="color:#ffff00;font-size:18px">' + num + '</b><br>' +
+                    '<span style="color:#888;font-size:10px">' + eNome + '</span><br>' +
+                    '📊 <b style="color:#00ff88">' + acertos + '</b> ✅ | <b style="color:#ff3366">' + erros + '</b> ❌',
+                    '#00ff88'
+                )
+                salvarEstadoStorage()
+                return
+            }
+            var limiteGale = cfgBot.autoApostar ? cfgBot.autoGale : cfgBot.gale
+            if (galeAtual < limiteGale) {
+                galeAtual++
+                var eNomeG = estadoAtual.estrategia ? estadoAtual.estrategia.nome : ''
+                historicoJogadas.unshift({ resultado: 'gale', num: num, estrategia: eNomeG, gale: galeAtual, hora: agora })
+                var multGale = Math.pow(2, galeAtual)  // gale1=2x, gale2=4x, gale3=8x
+                apostarAutomatico(estadoAtual.numerosApostados, multGale)
+                enviarSinalTelegram({ fase: 'gale', numero: num, gale: galeAtual, acertos: acertos, erros: erros })
+                mostrarComHistorico(
+                    '⚡ <b>GALE ' + galeAtual + '/' + limiteGale + '</b>—Saiu: <b>' + num + '</b>' +
+                    '  <span style="color:#ff6b35;font-size:10px">x' + multGale + ' fichas</span><br>' +
+                    displayEntradaAgrupada(eNomeG, estadoAtual.numerosApostados),
+                    '#ffaa00'
+                )
+                salvarEstadoStorage()
+                return
+            }
+            erros++; galeAtual = 0
+            var eNomeL = estadoAtual.estrategia ? estadoAtual.estrategia.nome : ''
+            var eGatL  = estadoAtual.estrategia ? estadoAtual.estrategia.gatilho : null
+            registrarStatGatilho(eGatL, false)
+            registrarScoreGatilho(eGatL, false)
+            historicoJogadas.unshift({ resultado: 'loss', num: num, estrategia: eNomeL, hora: agora })
+            // Reset completo — cancela qualquer aposta pendente
+            cancelarApostaAutomatica()
+            estadoAtual = { fase: 'aguardando', estrategia: null, contConf: 0, numerosApostados: [], passo: 0 }
+            aguardarProximoGiro = 2     // bloqueia 2 giros para limpar janela
+            enviarSinalTelegram({ fase: 'perdeu', numero: num, acertos: acertos, erros: erros })
+            mostrarComHistorico(
+                '❌ <b>PERDEU!</b> Número: <b style="color:#ffff00;font-size:18px">' + num + '</b><br>' +
+                '<span style="color:#888;font-size:10px">' + eNomeL + '</span><br>' +
+                '📊 <b style="color:#00ff88">' + acertos + '</b> ✅ | <b style="color:#ff3366">' + erros + '</b> ❌',
+                '#ff3366'
+            )
+            salvarEstadoStorage()
+            return
+        }
+
+        // ── CONTANDO: gatilho detectado → entra imediatamente ──
+        if (estadoAtual.fase === 'contando') {
+            var eSeq   = estadoAtual.estrategia
+            if (!eSeq) {
+                var rgG = analisarHistorico(historicoNumeros)
+                aplicarResultadoAnalise(rgG, null)
+                return
+            }
+
+            // ── Inicializa contadores de confirmação se necessário ──
+            if (!estadoAtual.confInit) {
+                estadoAtual.confInit   = true
+                estadoAtual.confNeutros = 0
+                estadoAtual.confTend    = 0
+                estadoAtual.confGiros   = 0
+                estadoAtual.sinalFraco  = estadoAtual.sinalFraco || false
+                estadoAtual.confJanela  = cfgBot.confJanela || 8
+
+                // ── Confirmações só para as 5 CLÁSSICAS que têm neutro+tendencia bem definidos ──
+                // Clássicas: ELITE 2X, QUARTA DIMENSÃO, FÓRMULA 5X, PADRÃO BLACK, QUADRANTES
+                // PDFs (INVERTIDOS, FIXOS, SE CHAMAM, POUCAS FICHAS, GATILHO, PUXAM): entram direto
+                // Detecta clássicas por prefixo do nome (case-insensitive, sem acentos)
+                var _nomeClean = (eSeq.nome || '')
+                    .toLowerCase()
+                    .replace(/[áàãâä]/g,'a').replace(/[éèêë]/g,'e')
+                    .replace(/[íìîï]/g,'i').replace(/[óòõôö]/g,'o')
+                    .replace(/[úùûü]/g,'u').replace(/[ç]/g,'c')
+                var ehClassica = (
+                    _nomeClean.indexOf('elite 2x')     !== -1 ||
+                    _nomeClean.indexOf('quarta dim')   !== -1 ||
+                    _nomeClean.indexOf('dimensao')     !== -1 ||
+                    _nomeClean.indexOf('formula 5x')  !== -1 ||
+                    _nomeClean.indexOf('padrao black') !== -1 ||
+                    _nomeClean.indexOf('black')        !== -1 ||
+                    _nomeClean.indexOf('quadrante')    !== -1
+                )
+                var nomeUp = (eSeq.nome || '').toUpperCase()
+                var temNeutro = ehClassica && eSeq.neutro    && eSeq.neutro.length    > 0
+                var temTend   = ehClassica && eSeq.tendencia && eSeq.tendencia.length > 0
+                estadoAtual.confNeutroMin = (temNeutro ? (cfgBot.confClassicas || 0) : 0)
+                estadoAtual.confTendMin   = (temTend   ? (cfgBot.confTendObrig  || 0) : 0)
+            }
+
+            // ── Verificar se entrada caiu (invalida) ──
+            var entradaSeq = eSeq.entrada || []
+            if (entradaSeq.indexOf(num) !== -1) {
+                // Número de entrada caiu antes de confirmar — reinicia
+                estadoAtual = { fase: 'aguardando', estrategia: null, contConf: 0, numerosApostados: [], passo: 0 }
+                var rgInv = analisarHistorico(historicoNumeros)
+                aplicarResultadoAnalise(rgInv, null)
+                return
+            }
+
+            estadoAtual.confGiros++
+
+            // ── Janela de confirmação esgotada ──
+            if (estadoAtual.confGiros > estadoAtual.confJanela) {
+                estadoAtual = { fase: 'aguardando', estrategia: null, contConf: 0, numerosApostados: [], passo: 0 }
+                var rgExp = analisarHistorico(historicoNumeros)
+                aplicarResultadoAnalise(rgExp, null)
+                return
+            }
+
+            // ── Classificar número atual ──
+            var neutros  = eSeq.neutro    || []
+            var tendSeq  = eSeq.tendencia || []
+            var ehNeutro = neutros.indexOf(String(num)) !== -1
+            var ehTend   = tendSeq.indexOf(String(num)) !== -1
+            if (ehNeutro) estadoAtual.confNeutros++
+            if (ehTend)   estadoAtual.confTend++
+
+            // ── Verificar se confirmações foram atingidas ──
+            var neutrosOk = estadoAtual.confNeutros >= estadoAtual.confNeutroMin
+            var tendOk    = estadoAtual.confTend    >= estadoAtual.confTendMin
+            var confirmacoesOk = neutrosOk && tendOk
+
+            // ── Atualiza display de progresso das confirmações ──
+            if (!confirmacoesOk) {
+                var nN = estadoAtual.confNeutros, mN = estadoAtual.confNeutroMin
+                var nT = estadoAtual.confTend,    mT = estadoAtual.confTendMin
+                var corSeqConf = '#c8d8f0'
+                var nnSeqConf = (eSeq.nome||'').toUpperCase()
+                if (nnSeqConf.indexOf('ELITE') !== -1)     corSeqConf = '#ff6b35'
+                if (nnSeqConf.indexOf('QUARTA') !== -1)    corSeqConf = '#00e5ff'
+                if (nnSeqConf.indexOf('ORMULA') !== -1)    corSeqConf = '#ffd700'
+                if (nnSeqConf.indexOf('BLACK') !== -1)     corSeqConf = '#ffffff'
+                if (nnSeqConf.indexOf('QUADRANTE') !== -1) corSeqConf = '#00ff88'
+                var barN = '', barT = ''
+                for(var bi=0;bi<mN;bi++) barN += (bi<nN?'🔵':'⚪')
+                for(var bj=0;bj<mT;bj++) barT += (bj<nT?'🟡':'⚪')
+                mostrarComHistorico(
+                    '⏳ <b style="color:' + corSeqConf + ';font-size:13px">CONFIRMANDO...</b><br>' +
+                    '🎯 <b style="color:' + corSeqConf + '">' + eSeq.nome + '</b>' +
+                    '  <span style="color:#607d8b;font-size:9px">gatilho: <b style="color:#ffd700">' + eSeq.gatilho + '</b></span><br>' +
+                    (mN > 0 ? barN + ' <b style="color:#00e5ff">' + nN + '/' + mN + '</b> neutro  ' : '') +
+                    (mT > 0 ? barT + ' <b style="color:#ffaa00">' + nT + '/' + mT + '</b> tend  ' : '') +
+                    '<span style="color:#607d8b;font-size:9px">' + estadoAtual.confGiros + '/' + estadoAtual.confJanela + ' giros</span>',
+                    '#002040'
+                )
+                salvarEstadoStorage()
+                return
+            }
+
+            // ── Confirmações OK → ENTRA! ──
+            var zonasSeq = zonasComProtecao(entradaSeq, eSeq.nome)
+            estadoAtual = { fase: 'apostando', estrategia: eSeq, passo: 0,
+                contConf: 0, numerosApostados: zonasSeq }
+            galeAtual = 0
+            if (cfgBot.alertaSom) tocarSom(false)
+            apostarAutomatico(zonasSeq)
+            var numerosSeqEnviar = zonasSeq.length > 0 ? zonasSeq : (eSeq.alvo || eSeq.entrada || [])
+            enviarSinalTelegram({ fase: 'apostando', nome: eSeq.nome, gatilho: eSeq.gatilho || '', numeros: numerosSeqEnviar, acertos: acertos, erros: erros })
+            var corSeq = '#c8d8f0'
+            var nnSeq = (eSeq.nome||'').toUpperCase()
+            if (nnSeq.indexOf('ELITE') !== -1)     corSeq = '#ff6b35'
+            if (nnSeq.indexOf('QUARTA') !== -1)    corSeq = '#00e5ff'
+            if (nnSeq.indexOf('ORMULA') !== -1)    corSeq = '#ffd700'
+            if (nnSeq.indexOf('BLACK') !== -1)     corSeq = '#ffffff'
+            if (nnSeq.indexOf('QUADRANTE') !== -1) corSeq = '#00ff88'
+            if (nnSeq.indexOf('SETOR') !== -1 || nnSeq.indexOf('VQ') !== -1 || nnSeq.indexOf('TQ') !== -1 || nnSeq.indexOf('ZERO') !== -1 || nnSeq.indexOf('ORPH') !== -1 || nnSeq.indexOf('VIZ') !== -1) corSeq = '#a78bfa'
+            mostrarComHistorico(
+                '\u{1F680} <b style="color:#00ff88;font-size:14px">APOSTE AGORA!</b><br>' +
+                '\u{1F3AF} <b style="color:' + corSeq + '">' + eSeq.nome + '</b>' +
+                '  <span style="color:#607d8b;font-size:10px">gatilho: <b style="color:#ffd700">' + eSeq.gatilho + '</b></span><br>' +
+                displayEntradaAgrupada(eSeq.nome, zonasSeq),
+                '#003300'
+            )
+            salvarEstadoStorage()
+            return
+        }
+
+
+        // ── AGUARDANDO ──
+        if (estadoAtual.fase !== 'aguardando') return
+
+        // Re-analisa com o novo numero no historico
+        var rescanAg = analisarCombinado(historicoNumeros)
+        aplicarResultadoAnalise(rescanAg, null)
+
+    }
+
+function aplicarResultadoAnalise(resultado, origem) {
+        var tag = origem ? ' <span style="color:#607d8b;font-size:10px">' + origem + '</span>' : ""
+        var msgApostar = ''
+
+        if (resultado && resultado.fase === "apostando" && resultado.estrategia) {
+            // ── GUARD: já está apostando esta estratégia? Não duplica entrada ──
+            if (estadoAtual.fase === 'apostando') {
+                // Já apostando — só atualiza display, NÃO re-entra nem re-chama apostar
+                return
+            }
+            var e = resultado.estrategia
+            var entrada = resultado.entrada || e.alvo || e.entrada || e.zonas || []
+            var zonasApostar = zonasComProtecao(entrada, e.nome)
+            estadoAtual = { fase: "apostando", estrategia: e, contConf: 0, numerosApostados: zonasApostar }
+            galeAtual = 0
+            if (cfgBot.alertaSom) tocarSom(false)
+            apostarAutomatico(zonasApostar)
+            var numerosEnviar = zonasApostar.length > 0 ? zonasApostar : (e.alvo || e.entrada || [])
+            enviarSinalTelegram({ fase: 'apostando', nome: e.nome, gatilho: e.gatilho || '', numeros: numerosEnviar, acertos: acertos, erros: erros })
+            if (resultado.modo === "sinais") {
+                var cVd  = resultado.contVerde || 0
+                var cFd2 = resultado.contFora  || 0
+                var mVd  = resultado.minV || cfgBot.minSinalVerde || 3
+                var mFd2 = resultado.minF || cfgBot.minFora || 3
+                var barraV = '', barraFr = ''
+                for (var bv = 0; bv < mVd;  bv++) barraV  += (bv < cVd  ? '🟢' : '⚪')
+                for (var bf = 0; bf < mFd2; bf++) barraFr += (bf < cFd2 ? '🟡' : '⚪')
+                msgApostar =
+                    '🚀 <b style="color:#00ff88;font-size:14px">APOSTE AGORA!</b>' +
+                    ' <span style="background:rgba(0,229,255,.15);color:#00e5ff;font-size:9px;padding:1px 5px;border-radius:3px">SINAL ✅</span>' + tag + '<br>' +
+                    '🎯 <b style="color:#00e5ff">' + e.nome + '</b>' +
+                    '  <span style="color:#607d8b;font-size:9px">disparo: <b style="color:#ffd700">' + (e.disparador||'') + '</b></span><br>' +
+                    barraV  + ' <b style="color:#00ff88">' + cVd  + '/' + mVd  + '</b> verde  ' +
+                    barraFr + ' <b style="color:#ffaa00">' + cFd2 + '/' + mFd2 + '</b> fora<br>' +
+                    '💰 <b style="color:#ffff00">' + zonasApostar.join(' · ') + '</b>'
+            } else if (resultado.modo === "zona") {
+                var cFd = resultado.cF || 0
+                var mFd = resultado.minF || cfgBot.minForte || 6
+                msgApostar =
+                    '\u{1F680} <b style="color:#00ff88;font-size:14px">APOSTE AGORA!</b>' +
+                    ' <span style="background:rgba(0,200,100,.2);color:#00c864;font-size:9px;padding:1px 5px;border-radius:3px">ZONA 6F</span>' + tag + '<br>' +
+                    '\u{1F3AF} <b>' + e.nome + '</b>  <span style="color:#aaa;font-size:10px">\u{1F535} Forte: <b style="color:#00e5ff">' + cFd + '/' + mFd + '</b></span><br>' +
+                    displayEntradaAgrupada(e.nome, zonasApostar)
+            } else {
+                var corN = '#c8d8f0'
+                var nn = (e.nome||'').toUpperCase()
+                if (nn.indexOf('ELITE') !== -1)     corN = '#ff6b35'
+                if (nn.indexOf('QUARTA') !== -1)    corN = '#00e5ff'
+                if (nn.indexOf('ORMULA') !== -1)    corN = '#ffd700'
+                if (nn.indexOf('BLACK') !== -1)     corN = '#ffffff'
+                if (nn.indexOf('QUADRANTE') !== -1) corN = '#00ff88'
+                if (nn.indexOf('SETOR') !== -1 || nn.indexOf('VQ') !== -1 || nn.indexOf('TQ') !== -1 || nn.indexOf('ORPH') !== -1 || nn.indexOf('VIZ') !== -1) corN = '#a78bfa'
+                msgApostar =
+                    '\u{1F680} <b style="color:#00ff88;font-size:14px">APOSTE AGORA!</b>' + tag + '<br>' +
+                    '\u{1F3AF} <b style="color:' + corN + '">' + e.nome + '</b>' +
+                    '  <span style="color:#607d8b;font-size:10px">gatilho: <b style="color:#ffd700">' + (e.gatilho||'') + '</b></span><br>' +
+                    displayEntradaAgrupada(e.nome, zonasApostar)
+            }
+            mostrarComHistorico(msgApostar, '#003300')
+
+        } else if (resultado && resultado.fase === "contando" && resultado.estrategia) {
+            var e = resultado.estrategia
+            estadoAtual = { fase: "contando", estrategia: e, passo: 1,
+                contConf: 1, numerosApostados: [] }
+
+            var JANELA8 = cfgBot.maxJanelaGatilho || 5
+            var linhaMsg
+            if (resultado.modo === "sinais") {
+                var cVc  = resultado.contVerde || 0
+                var cFc2 = resultado.contFora  || 0
+                var mVc  = resultado.minV || cfgBot.minSinalVerde || 3
+                var mFc2 = resultado.minF || cfgBot.minFora || 3
+                var bV = '', bF = ''
+                for (var bvi = 0; bvi < mVc;  bvi++) bV += (bvi < cVc  ? '🟢' : '⚪')
+                for (var bfi = 0; bfi < mFc2; bfi++) bF += (bfi < cFc2 ? '🟡' : '⚪')
+                linhaMsg =
+                    '🔵 <b style="color:#00e5ff;font-size:13px">AGUARDANDO SINAL...</b>' +
+                    ' <span style="color:#00e5ff;font-size:9px">SINAIS</span>' + tag + '<br>' +
+                    '🎯 <b>' + e.nome + '</b>' +
+                    '  <span style="color:#607d8b;font-size:9px">disparo: <b style="color:#ffd700">' + (e.disparador||'') + '</b></span><br>' +
+                    bV  + ' <b style="color:#00ff88">' + cVc  + '/' + mVc  + '</b> verde  ' +
+                    bF  + ' <b style="color:#ffaa00">' + cFc2 + '/' + mFc2 + '</b> fora'
+            } else if (resultado.modo === "zona") {
+                var cFc = resultado.cF || 0
+                var mFc = resultado.minF || cfgBot.minForte || 6
+                var barraF = ''
+                for (var bi=0; bi<mFc; bi++) barraF += (bi < cFc ? '\u{1F535}' : '\u26AA')
+                linhaMsg =
+                    '\u{1F50D} <b style="color:#00e5ff;font-size:13px">ANALISANDO MESA</b>' +
+                    ' <span style="color:#00c864;font-size:9px">ZONA</span>' + tag + '<br>' +
+                    '\u{1F3AF} <b>' + e.nome + '</b>  <span style="color:#888;font-size:10px">janela: ' + (cfgBot.janelaZona||10) + ' giros</span><br>' +
+                    barraF + '  <b style="color:#00e5ff">' + cFc + '/' + mFc + '</b> Forte'
+            } else {
+                var corD = '#ffd700'
+                var ndU = (e.nome||'').toUpperCase()
+                if (ndU.indexOf('ELITE') !== -1)     corD = '#ff6b35'
+                if (ndU.indexOf('QUARTA') !== -1)    corD = '#00e5ff'
+                if (ndU.indexOf('ORMULA') !== -1)    corD = '#ffd700'
+                if (ndU.indexOf('BLACK') !== -1)     corD = '#ffffff'
+                if (ndU.indexOf('QUADRANTE') !== -1) corD = '#00ff88'
+                // Badge de força do sinal
+                var forca = resultado.forca || 0
+                var forcaCor = forca >= 70 ? '#00ff88' : forca >= 40 ? '#ffaa00' : '#ff6b35'
+                var forcaLabel = forca >= 70 ? '💪 FORTE' : forca >= 40 ? '⚠️ MÉDIO' : '🔴 FRACO'
+                var avisoFraco = (resultado.sinalFraco && cfgBot.alertaSinalFraco)
+                    ? '<br><span style="color:#ff6b35;font-size:10px">⚠️ ' + (resultado.motivo||'sinal fraco') + ' — aguardando confirmar</span>'
+                    : ''
+                linhaMsg =
+                    '\u{1F680} <b style="color:#00ff88;font-size:14px">APOSTE NO PRÓXIMO!</b>' + tag + '<br>' +
+                    '\u{1F3AF} <b style="color:' + corD + '">' + e.nome + '</b>' +
+                    '  <span style="color:#607d8b;font-size:10px">gatilho: <b style="color:#ffd700">' + (e.gatilho || '') + '</b></span>' +
+                    '  <span style="background:rgba(0,0,0,.3);color:' + forcaCor + ';font-size:9px;padding:1px 5px;border-radius:4px">' + forcaLabel + ' ' + forca + '%</span><br>' +
+                    '\u23F3 <b style="color:#ff6b35">Próximo número = ENTRADA</b>' + avisoFraco
+            }
+            mostrarComHistorico(linhaMsg, "#002200")
+        } else {
+            estadoAtual = { fase: "aguardando", estrategia: null, contConf: 0, numerosApostados: [], passo: 0 }
+
+            // Verifica se há sinal bloqueado por filtro
+            if (resultado && resultado.bloqueado && resultado.estrategia) {
+                var eb     = resultado.estrategia
+                var motivo = resultado.motivo || 'filtro ativo'
+                var forca  = resultado.forca  || 0
+                var fcor   = forca >= 70 ? '#00ff88' : forca >= 40 ? '#ffaa00' : '#ff6b35'
+                var nomeUB = (eb.nome||'').toUpperCase()
+                var corB   = '#c8d8f0'
+                if (nomeUB.indexOf('ELITE') !== -1)     corB = '#ff6b35'
+                if (nomeUB.indexOf('QUARTA') !== -1)    corB = '#00e5ff'
+                if (nomeUB.indexOf('ORMULA') !== -1)    corB = '#ffd700'
+                if (nomeUB.indexOf('BLACK') !== -1)     corB = '#ffffff'
+                if (nomeUB.indexOf('QUADRANTE') !== -1) corB = '#00ff88'
+                mostrarComHistorico(
+                    '\u26D4 <b style="color:#ff6b35;font-size:13px">BLOQUEADO</b>' +
+                    '  <span style="color:' + fcor + ';font-size:9px;padding:1px 5px;background:rgba(0,0,0,.3);border-radius:4px">' + forca + '%</span><br>' +
+                    '\u{1F3AF} <b style="color:' + corB + '">' + (eb.nome||'') + '</b>' +
+                    '  <span style="color:#607d8b;font-size:9px">gatilho: <b style="color:#ffd700">' + (eb.gatilho||'') + '</b></span><br>' +
+                    '\u{1F6AB} <span style="color:#ff6b35;font-size:10px">' + motivo + '</span>  ' +
+                    '<span style="color:#607d8b;font-size:9px">aguardando condição melhorar...</span>',
+                    '#1a0505'
+                )
+            } else {
+                mostrarComHistorico(
+                    '\u{1F50D} <b style="color:#607d8b">Aguardando gatilho...</b><br>' +
+                    '\u{1F4CA} \u2705 ' + acertos + ' | \u274C ' + erros,
+                    "#1a2030"
+                )
+            }
+        }
+        salvarEstadoStorage()
+    }
+
+
+// ══════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════
+var _token = localStorage.getItem('atlasToken')||''
+var _user  = JSON.parse(localStorage.getItem('atlasUser')||'null')
+var SERVIDOR = ''
+
+async function doLogin(){
+    var u=document.getElementById('l-u').value.trim()
+    var p=document.getElementById('l-p').value
+    var err=document.getElementById('l-err'),btn=document.getElementById('l-btn')
+    if(!u){err.textContent='Digite seu usuário';return}
+    btn.disabled=true;btn.textContent='Entrando...'
+    err.textContent=''
+    try{
+        var r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({usuario:u,senha:p})})
+        var d=await r.json()
+        if(!r.ok){err.textContent=d.erro||'Erro';btn.disabled=false;btn.textContent='Entrar no Atlas IA →';return}
+        _token=d.token;_user={nome:d.nome,plano:d.plano}
+        localStorage.setItem('atlasToken',_token);localStorage.setItem('atlasUser',JSON.stringify(_user))
+        iniciarApp()
+    }catch(e){err.textContent='Erro de conexão';btn.disabled=false;btn.textContent='Entrar no Atlas IA →'}
+}
+
+function logout(){
+    localStorage.removeItem('atlasToken');localStorage.removeItem('atlasUser')
+    _token='';_user=null
+    document.getElementById('scr-app').style.display='none'
+    document.getElementById('scr-login').style.display='flex'
+    var btn=document.getElementById('l-btn');btn.disabled=false;btn.textContent='Entrar no Atlas IA →'
+}
+
+// ══════════════════════════════════════════════════════════
+// POSTMESSAGE — recebe números do iframe do cassino
+// ══════════════════════════════════════════════════════════
+window.addEventListener('message', function(ev){
+    var d=ev.data; if(!d)return
+
+    if(d.tipo==='ATLAS_SALDO'||d.tipo==='HYPPER_SALDO'){
+        var s=d.saldo
+        if(typeof s==='number'&&s>=0){if(saldoInicial===null)saldoInicial=s;saldoAtual=s;atualizarSaldoUI()}
+        return
+    }
+
+    if(d.tipo!=='ATLAS_NUMEROS'&&d.tipo!=='HYPPER_NUMEROS')return
+    var seq=d.sequencia; if(!seq||!seq.length)return
+    var chave=seq.slice(0,5).join(',')
+    if(chave===ultimaSeqIframe)return
+    ultimaSeqIframe=chave
+
+    // Atualiza provedor/mesa
+    var hm=document.getElementById('tb-mesa')
+    if(hm&&d.provedor&&d.provedor!=='desconhecido')hm.textContent=d.provedor
+    setConn('ok')
+
+    // Badge número
+    var nb=document.getElementById('tb-num'),novo=seq[0]
+    if(nb){nb.className='tb-num '+corNum(String(novo));nb.textContent=novo;nb.classList.add('num-pop');setTimeout(function(){nb.classList.remove('num-pop')},400)}
+
+    // Processa
+    historicoNumeros=seq
+    if(iniciado)processarNumero(String(novo))
+    atualizarPlacar();atualizarRecentes();atualizarHist()
+    try{localStorage.setItem('atlasHist',JSON.stringify(historicoNumeros.slice(0,50)))}catch(e){}
+})
+
+// ══════════════════════════════════════════════════════════
+// PROXY / IFRAME
+// ══════════════════════════════════════════════════════════
+async function conectar(){
+    var overlay=document.getElementById('f-overlay')
+    var iframe=document.getElementById('game-frame')
+    var url=document.getElementById('c-url').value.trim()
+    var btn=document.getElementById('btn-start')
+    if(!url){toast('⚠️ Informe a URL da roleta');return}
+    if(!url.startsWith('http'))url='https://'+url
+
+    btn.textContent='Carregando...';btn.disabled=true
+    overlay.classList.add('hidden')
+    setConn('warn')
+
+    var proxyUrl='/proxy?url='+encodeURIComponent(url)
+    iframe.src=proxyUrl
+    iniciado=true
+
+    // Atualiza nome da mesa
+    try{var u=new URL(url);document.getElementById('tb-mesa').textContent=u.hostname.replace('www.','')}catch(e){}
+
+    iframe.onload=function(){
+        btn.textContent='▶ Reconectar';btn.disabled=false
+        toast('🎰 Roleta carregada! Aguardando números...')
+        setConn('ok')
+    }
+    iframe.onerror=function(){
+        btn.textContent='▶ Iniciar';btn.disabled=false
+        overlay.classList.remove('hidden')
+        toast('❌ Falha ao carregar. Tente outra URL.')
+        setConn('off')
+    }
+}
+function recarregar(){document.getElementById('f-overlay').classList.add('hidden');conectar()}
+
+// ══════════════════════════════════════════════════════════
+// DISPLAY
+// ══════════════════════════════════════════════════════════
+function renderStatusCard(){
+    var sc=document.getElementById('scard'),fase=document.getElementById('s-fase'),
+        nome=document.getElementById('s-nome'),sub=document.getElementById('s-sub'),
+        ext=document.getElementById('s-ext'),eb=document.getElementById('ebox')
+    sc.className='scard anim';eb.style.display='none'
+    var s=estadoAtual
+
+    if(s.fase==='apostando'){
+        sc.classList.add('s-ap')
+        var at=cfgBot.autoApostar?'<span class="auto-b on" style="margin-left:auto">🤖 AUTO</span>':'' 
+        fase.innerHTML='<span>🚀</span><span style="color:var(--green)">APOSTE AGORA!</span>'+at
+        nome.textContent=s.estrategia?s.estrategia.nome:'';nome.style.color='var(--green)'
+        sub.textContent='Gatilho: '+(s.estrategia?s.estrategia.gatilho:'')+(s.numerosApostados.length?'  •  '+s.numerosApostados.length+' números':'')
+        ext.innerHTML='<div class="s-nums">'+s.numerosApostados.map(function(n){return nEl(n)}).join('')+'</div>'
+        eb.style.display='block'
+        document.getElementById('eb-nome').textContent=s.estrategia?s.estrategia.nome:''
+        document.getElementById('eb-sub').textContent='Gatilho: '+(s.estrategia?s.estrategia.gatilho:'')
+        document.getElementById('eb-nums').innerHTML=s.numerosApostados.map(function(n){return nEl(n)}).join('')
+    }
+    else if(s.fase==='contando'||s.fase==='confirmando'){
+        sc.classList.add('s-co')
+        var f=s.forca||0,fc=f>=70?'var(--green)':f>=40?'var(--gold)':'var(--red)',fl=f>=70?'💪 FORTE':f>=40?'⚠️ MÉDIO':'🔴 FRACO'
+        fase.innerHTML='<span>⏳</span><span style="color:var(--ac)">CONFIRMANDO...</span><span style="font-size:9px;color:'+fc+';margin-left:auto">'+fl+' '+f+'%</span>'
+        nome.textContent=s.estrategia?s.estrategia.nome:'';nome.style.color='var(--ac)'
+        sub.textContent='Gatilho: '+(s.estrategia?s.estrategia.gatilho:'')+(s.confGiros!==undefined?'  •  giro '+s.confGiros+'/'+(s.confJanela||cfgBot.confJanela):'')
+        var mn=s.confNeutroMin||0,nt=s.confNeutros||0,mt=s.confTendMin||0,tt=s.confTend||0,bn='',bt=''
+        for(var i=0;i<mn;i++)bn+='<div class="c-dot '+(i<nt?'vd':'')+'">●</div>'
+        for(var j=0;j<mt;j++)bt+='<div class="c-dot '+(j<tt?'fo':'')+'">●</div>'
+        ext.innerHTML=(mn>0?'<div class="conf-bar">'+bn+'</div><div style="font-size:9px;color:var(--muted)">🔵 '+nt+'/'+mn+' neutro</div>':'')+
+                      (mt>0?'<div class="conf-bar">'+bt+'</div><div style="font-size:9px;color:var(--muted)">🟡 '+tt+'/'+mt+' tend</div>':'')+
+                      (s.sinalFraco?'<div style="font-size:10px;color:var(--orange);margin-top:4px">⚠️ '+s.motivo+'</div>':'')
+    }
+    else if(s.fase==='bloqueado'){
+        sc.classList.add('s-bl')
+        fase.innerHTML='<span>⛔</span><span style="color:var(--orange)">BLOQUEADO</span>'
+        nome.textContent=s.estrategia?s.estrategia.nome:'';nome.style.color='var(--orange)'
+        sub.textContent='Gatilho: '+(s.estrategia?s.estrategia.gatilho:'')
+        ext.innerHTML='<div style="font-size:10px;color:var(--orange);margin-top:4px">🚫 '+s.motivo+'</div><div style="font-size:9px;color:var(--muted);margin-top:2px">Aguardando condições melhorarem...</div>'
+    }
+    else{
+        fase.innerHTML='<span style="font-size:15px">🔍</span><span style="color:var(--muted)">AGUARDANDO GATILHO</span>'
+        nome.textContent=ESTRATEGIAS.filter(function(e){return e.ativo}).length+' estratégias ativas'
+        nome.style.color='var(--muted)';sub.textContent='';ext.innerHTML=''
+    }
+
+    // Sinais em progresso
+    var sa=Object.keys(estadosSinais)
+    if(sa.length>0){
+        var ms=estadosSinais[sa[0]],cV=ms.contVerde||0,cF=ms.contFora||0
+        var minV=cfgBot.minSinalVerde||3,minF=cfgBot.minFora||3
+        var bv='',bf=''
+        for(var a=0;a<minV;a++)bv+='<span style="color:'+(a<cV?'var(--green)':'rgba(255,255,255,.15)')+'">●</span>'
+        for(var b=0;b<minF;b++)bf+='<span style="color:'+(b<cF?'var(--gold)':'rgba(255,255,255,.15)')+'">●</span>'
+        ext.innerHTML+='<div class="s-sinal-prog"><div style="font-size:9px;color:var(--ac);font-weight:800;margin-bottom:3px">🔵 '+(ms.estrategia?ms.estrategia.nome:'SINAL')+(sa.length>1?' +'+(sa.length-1)+' outros':'')+'</div><div style="font-size:11px">'+bv+' '+cV+'/'+minV+' verde  '+bf+' '+cF+'/'+minF+' fora</div></div>'
+    }
+}
+
+function atualizarPlacar(){
+    var tot=acertos+erros
+    document.getElementById('p-a').textContent=acertos
+    document.getElementById('p-e').textContent=erros
+    document.getElementById('p-t').textContent=tot>0?Math.round(acertos/tot*100)+'%':'—'
+    document.getElementById('p-g').textContent=historicoNumeros.length
+}
+
+function atualizarRecentes(){
+    var el=document.getElementById('rec-scroll'),cnt=document.getElementById('rec-cnt')
+    if(!historicoNumeros.length){el.innerHTML='<span style="color:var(--muted);font-size:11px;padding:3px">Aguardando...</span>';return}
+    el.innerHTML=historicoNumeros.slice(0,20).map(function(n,i){return'<div style="flex-shrink:0">'+nEl(n,i===0)+'</div>'}).join('')
+    if(cnt)cnt.textContent=historicoNumeros.length+' giros'
+    var card=document.getElementById('card-gat'),list=document.getElementById('gats-list')
+    var gts=Object.keys(statsGatilho).filter(function(k){return statsGatilho[k].acertos+statsGatilho[k].erros>0})
+    if(!gts.length){card.style.display='none';return}
+    card.style.display='block'
+    list.innerHTML=gts.map(function(k){var s=statsGatilho[k],tot=s.acertos+s.erros,p=Math.round(s.acertos/tot*100);return'<div class="gt '+(p>=50?'ok':'fail')+'">G'+k+' '+p+'% ('+s.acertos+'/'+tot+')</div>'}).join('')
+}
+
+function atualizarHist(){
+    var el=document.getElementById('hist-list')
+    if(!historicoJogadas.length){el.innerHTML='<div class="empty"><div class="ei">📋</div><div>Nenhuma jogada ainda</div></div>';return}
+    el.innerHTML=historicoJogadas.slice(0,40).map(function(j){
+        var ico=j.resultado==='win'?'✅':j.resultado==='loss'?'❌':'⚡'
+        var cls=j.resultado==='win'?'w':j.resultado==='loss'?'l':'g'
+        var lbl=j.resultado==='win'?'Ganhou':j.resultado==='loss'?'Perdeu':'Gale '+(j.gale||1)
+        return'<div class="h-item anim"><div class="h-ico '+cls+'">'+ ico+'</div><div class="h-info"><div class="h-nome">'+(j.estrategia||'—')+(j.modo==='sinal'?' <span style="font-size:8px;color:var(--ac)">S</span>':'')+'</div><div class="h-sub">'+lbl+(j.hora?' '+j.hora:'')+'</div></div><div class="h-r '+cls+'">'+ nEl(j.num)+'</div></div>'
+    }).join('')
+}
+
+function atualizarSaldoUI(){
+    if(saldoAtual===null)return
+    document.getElementById('saldo-bar').style.display='flex'
+    document.getElementById('sv').textContent='R$ '+saldoAtual.toLocaleString('pt-BR',{minimumFractionDigits:2})
+    document.getElementById('tb-saldo').style.display='block'
+    document.getElementById('tb-saldo').textContent='R$ '+saldoAtual.toLocaleString('pt-BR',{minimumFractionDigits:2})
+    if(saldoInicial!==null){var d=saldoAtual-saldoInicial;var sd=document.getElementById('sd');sd.textContent=(d>=0?'+':'')+'R$ '+Math.abs(d).toLocaleString('pt-BR',{minimumFractionDigits:2});sd.className='sd '+(d>=0?'up':'dn')}
+}
+
+function toggleAuto(){
+    cfgBot.autoApostar=!cfgBot.autoApostar
+    var b=document.getElementById('auto-b');b.textContent=cfgBot.autoApostar?'🤖 ON':'OFF';b.className='auto-b'+(cfgBot.autoApostar?' on':'')
+    toast(cfgBot.autoApostar?'🤖 Auto-aposta LIGADA':'⏸ Auto-aposta DESLIGADA');salvarCfgLocal()
+}
+
+// ══════════════════════════════════════════════════════════
+// CONEXÃO STATUS
+// ══════════════════════════════════════════════════════════
+function setConn(s){
+    var d=document.getElementById('conn-dot'),l=document.getElementById('conn-lbl')
+    if(s==='ok'){d.className='dot ok';l.textContent='Ativo'}
+    else if(s==='warn'){d.className='dot warn';l.textContent='Conectando'}
+    else{d.className='dot';l.textContent='Offline'}
+}
+function connInfo(){
+    var l=document.getElementById('conn-lbl')
+    toast(l&&l.textContent==='Ativo'?'🟢 Roleta ativa — recebendo números':'⚪ Aguardando conexão')
+}
+
+// ══════════════════════════════════════════════════════════
+// TOAST & NOTIF
+// ══════════════════════════════════════════════════════════
+var _nt=null
+function mostrarNotif(tipo,titulo,sub,nums){
+    var c=document.getElementById('notif')
+    c.className='notif'+(tipo==='perdeu'?' red':'')
+    document.getElementById('n-title').textContent=titulo
+    document.getElementById('n-sub').textContent=sub
+    document.getElementById('n-nums').innerHTML=nums.slice(0,14).map(function(n){return nEl(n)}).join('')
+    c.classList.add('show');if(_nt)clearTimeout(_nt)
+    _nt=setTimeout(function(){c.classList.remove('show')},tipo==='apostando'?9000:4000)
+}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500)}
+
+// ══════════════════════════════════════════════════════════
+// CONFIG UI
+// ══════════════════════════════════════════════════════════
+function carregarCfgLocal(){
+    try{
+        Object.assign(cfgBot,JSON.parse(localStorage.getItem('atlasCfg')||'{}')||'{}')
+        var ec=JSON.parse(localStorage.getItem('atlasEst')||'{}')||{}
+        ESTRATEGIAS.forEach(function(e){if(ec[e.nome]!==undefined)e.ativo=ec[e.nome]})
+        ESTRATEGIAS_SINAIS.forEach(function(e){if(ec[e.nome]!==undefined)e.ativo=ec[e.nome]})
+        var h=JSON.parse(localStorage.getItem('atlasHist')||'[]')
+        if(h.length)historicoNumeros=h
+    }catch(e){}
+}
+function salvarCfgLocal(){
+    try{
+        localStorage.setItem('atlasCfg',JSON.stringify(cfgBot))
+        var ec={}
+        ESTRATEGIAS.forEach(function(e){ec[e.nome]=e.ativo})
+        ESTRATEGIAS_SINAIS.forEach(function(e){ec[e.nome]=e.ativo})
+        localStorage.setItem('atlasEst',JSON.stringify(ec))
+    }catch(e){}
+}
+function salvarCfg(){salvarCfgLocal();toast('✅ Configurações salvas!')}
+
+var cfgCat='classicas'
+var CFG_MAP={classicas:['ELITE 2X','QUARTA DIMENSÃO','FÓRMULA 5X','PADRÃO BLACK','QUADRANTES'],
+    invertidos:['INVERTIDOS'],fixos:['FIXOS'],poucas:['POUCAS FICHAS'],chamam:['SE CHAMAM'],
+    gatilhos:['GATILHO'],puxam:['PUXAM']}
+
+function renderCfg(){
+    var el=document.getElementById('cfg-body'),cat=cfgCat
+    if(cat==='precisao'){el.innerHTML=htmlPrec();bindPrec();return}
+    if(cat==='sinais'){el.innerHTML=htmlSin();bindSin();return}
+    if(cat==='auto'){el.innerHTML=htmlAuto();bindAuto();return}
+    var prefs=CFG_MAP[cat]||[]
+    var lista=ESTRATEGIAS.filter(function(e){return prefs.some(function(p){return e.nome.toUpperCase().indexOf(p.toUpperCase())!==-1})})
+    el.innerHTML=lista.map(function(e){return'<div class="e-row"><div class="sw'+(e.ativo?' on':'')+'" data-nome="'+e.nome+'"></div><div class="e-nome">'+e.nome+'</div><div class="e-gat">G'+e.gatilho+'</div></div>'}).join('')
+    el.querySelectorAll('.sw[data-nome]').forEach(function(sw){sw.addEventListener('click',function(){var e=ESTRATEGIAS.find(function(x){return x.nome===this.dataset.nome}.bind(this));if(e){e.ativo=!e.ativo;this.classList.toggle('on',e.ativo)}})})
+}
+
+function swR(id,l,d,v){return'<div class="sw-row"><div class="sw-info"><div class="sw-n">'+l+'</div><div class="sw-d">'+d+'</div></div><div class="sw'+(v?' on':'')+'" id="sw-'+id+'"></div></div>'}
+function spR(id,l,d,v,mn,mx){return'<div class="sp-row"><div class="sp-info"><div class="sp-n">'+l+'</div><div class="sp-d">'+d+'</div></div><div class="stepper"><button class="sp-b" id="sp-'+id+'-m">−</button><div class="sp-v" id="sp-'+id+'-v">'+v+'</div><button class="sp-b" id="sp-'+id+'-p">+</button></div></div>'}
+
+function htmlPrec(){return'<div class="card">'+spR('cn','🔵 Neutros','Clássicas: após gatilho (0=off)',cfgBot.confClassicas,0,5)+spR('ct','🟡 Tendências','Clássicas: após gatilho (0=off)',cfgBot.confTendObrig,0,5)+spR('cj','⏱ Janela conf','Giros máx para confirmar',cfgBot.confJanela,2,20)+'</div><div class="card">'+swR('ft','📈 Filtro Tendência','Exige tend. ativa (clássicas)',cfgBot.filtroTendencia)+spR('mth','Mín. vista','',cfgBot.minTendenciaHist,0,8)+swR('fo','🚫 Filtro Oposto','Bloqueia se setor oposto ativo',cfgBot.filtroOposto)+spR('mo','Máx. opostos','',cfgBot.maxOpostoAtivo,0,15)+swR('fs','📊 Filtro Score','Filtra por histórico de acerto',cfgBot.filtroScore)+spR('sm','% mínimo','0=desligado',cfgBot.scoreMinEntrada,0,80)+swR('af','🚫 Bloquear sinal fraco','ON=não entra se filtro reprovar',cfgBot.alertaSinalFraco)+'</div><div class="card">'+swR('pa','🛡️ Proteção auto','Vizinhos em entradas pequenas',cfgBot.protecaoAtiva)+spR('pm','Mín. números','',cfgBot.protecaoMinNums,1,20)+spR('pv','Vizinhos','',cfgBot.protecaoVizinhos,1,3)+swR('zg','🟢 Zero = sempre GREEN','0 cair apostando = acerto',cfgBot.zeroSempreGreen)+'</div>'}
+
+function bindPrec(){
+    function bsw(id,k){var e=document.getElementById('sw-'+id);if(e)e.addEventListener('click',function(){cfgBot[k]=!cfgBot[k];this.classList.toggle('on',cfgBot[k])})}
+    function bsp(id,k,mn,mx){var m=document.getElementById('sp-'+id+'-m'),p=document.getElementById('sp-'+id+'-p'),v=document.getElementById('sp-'+id+'-v');if(m)m.addEventListener('click',function(){cfgBot[k]=Math.max(mn,cfgBot[k]-1);if(v)v.textContent=cfgBot[k]});if(p)p.addEventListener('click',function(){cfgBot[k]=Math.min(mx,cfgBot[k]+1);if(v)v.textContent=cfgBot[k]})}
+    bsw('ft','filtroTendencia');bsw('fo','filtroOposto');bsw('fs','filtroScore');bsw('af','alertaSinalFraco');bsw('pa','protecaoAtiva');bsw('zg','zeroSempreGreen')
+    bsp('cn','confClassicas',0,5);bsp('ct','confTendObrig',0,5);bsp('cj','confJanela',2,20);bsp('mth','minTendenciaHist',0,8);bsp('mo','maxOpostoAtivo',0,15);bsp('sm','scoreMinEntrada',0,80);bsp('pm','protecaoMinNums',1,20);bsp('pv','protecaoVizinhos',1,3)
+}
+
+function htmlSin(){return'<div class="card">'+spR('sv','🟢 Mín. verde','',cfgBot.minSinalVerde,1,6)+spR('sf','🟡 Mín. fora','',cfgBot.minFora,1,6)+spR('sj','⏱ Janela','Giros após disparador',cfgBot.janelaSignal,5,20)+spR('scd','🔴 Cooldown RED','',cfgBot.cooldownSinal,1,10)+'</div><div class="card" style="max-height:380px;overflow-y:auto">'+ESTRATEGIAS_SINAIS.map(function(e){return'<div class="e-row"><div class="sw'+(e.ativo?' on':'')+'" data-snome="'+e.nome+'"></div><div class="e-nome">'+e.nome+'</div><div class="e-gat">D'+e.disparador+'</div></div>'}).join('')+'</div>'}
+
+function bindSin(){
+    function bsp(id,k,mn,mx){var m=document.getElementById('sp-'+id+'-m'),p=document.getElementById('sp-'+id+'-p'),v=document.getElementById('sp-'+id+'-v');if(m)m.addEventListener('click',function(){cfgBot[k]=Math.max(mn,cfgBot[k]-1);if(v)v.textContent=cfgBot[k]});if(p)p.addEventListener('click',function(){cfgBot[k]=Math.min(mx,cfgBot[k]+1);if(v)v.textContent=cfgBot[k]})}
+    bsp('sv','minSinalVerde',1,6);bsp('sf','minFora',1,6);bsp('sj','janelaSignal',5,20);bsp('scd','cooldownSinal',1,10)
+    document.querySelectorAll('#cfg-body .sw[data-snome]').forEach(function(sw){sw.addEventListener('click',function(){var e=ESTRATEGIAS_SINAIS.find(function(x){return x.nome===this.dataset.snome}.bind(this));if(e){e.ativo=!e.ativo;this.classList.toggle('on',e.ativo)}})})
+}
+
+function htmlAuto(){return'<div class="card">'+swR('aa','🤖 Auto-aposta','Clica automaticamente nas apostas',cfgBot.autoApostar)+spR('ad','⏱ Delay (ms)','Tempo entre cliques (padrão 50)',cfgBot.autoDelay,20,500)+spR('gl','⚡ Gales','Tentativas após perder',cfgBot.gale,0,3)+spR('jr','🔍 Janela gatilho','Giros para encontrar gatilho',cfgBot.maxJanelaGatilho,2,10)+swR('som','🔊 Som','Toca som ao entrar/sair',cfgBot.alertaSom)+'</div>'}
+
+function bindAuto(){
+    function bsw(id,k){var e=document.getElementById('sw-'+id);if(e)e.addEventListener('click',function(){cfgBot[k]=!cfgBot[k];this.classList.toggle('on',cfgBot[k]);if(k==='autoApostar')toggleAuto()})}
+    function bsp(id,k,mn,mx){var m=document.getElementById('sp-'+id+'-m'),p=document.getElementById('sp-'+id+'-p'),v=document.getElementById('sp-'+id+'-v');if(m)m.addEventListener('click',function(){cfgBot[k]=Math.max(mn,cfgBot[k]-1);if(v)v.textContent=cfgBot[k]});if(p)p.addEventListener('click',function(){cfgBot[k]=Math.min(mx,cfgBot[k]+1);if(v)v.textContent=cfgBot[k]})}
+    bsw('aa','autoApostar');bsw('som','alertaSom')
+    bsp('ad','autoDelay',20,500);bsp('gl','gale',0,3);bsp('jr','maxJanelaGatilho',2,10)
+}
+
+// ══════════════════════════════════════════════════════════
+// MOBILE
+// ══════════════════════════════════════════════════════════
+var _mob=false
+function toggleMob(){
+    _mob=!_mob
+    var pc=document.getElementById('p-casino'),pa=document.querySelector('.p-atlas'),f=document.getElementById('fab')
+    if(_mob){pc.classList.add('mob');pa.style.display='none';f.textContent='📊'}
+    else{pc.classList.remove('mob');pa.style.display='flex';f.textContent='🎰'}
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+function iniciarApp(){
+    document.getElementById('scr-login').style.display='none'
+    document.getElementById('scr-app').style.display='flex'
+    carregarCfgLocal()
+    renderStatusCard()
+    atualizarPlacar()
+    atualizarRecentes()
+    iniciado=true
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    // Tenta recuperar sessão
+    if(_token&&_user){
+        fetch('/api/me',{headers:{Authorization:'Bearer '+_token}})
+            .then(function(r){return r.json()})
+            .then(function(d){if(d.ok)iniciarApp()})
+            .catch(function(){if(_user)iniciarApp()})
+    }
+
+    // Tabs
+    document.querySelectorAll('.a-tab').forEach(function(t){t.addEventListener('click',function(){
+        var tab=this.dataset.t
+        document.querySelectorAll('.a-tab').forEach(function(x){x.classList.remove('on')})
+        document.querySelectorAll('.a-page').forEach(function(x){x.classList.remove('on')})
+        this.classList.add('on');document.getElementById('pg-'+tab).classList.add('on')
+        if(tab==='config')renderCfg()
+        if(tab==='historico')atualizarHist()
+    })})
+
+    // Cats config
+    document.getElementById('cfg-cats').addEventListener('click',function(e){
+        if(!e.target.matches('.cfg-cat'))return
+        document.querySelectorAll('.cfg-cat').forEach(function(p){p.classList.remove('on')})
+        e.target.classList.add('on');cfgCat=e.target.dataset.c;renderCfg()
+    })
+
+    // Enter no login
+    document.getElementById('l-u').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('l-p').focus()})
+    document.getElementById('l-p').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()})
+})
+</script>
+</body>
+</html>
