@@ -747,8 +747,54 @@ app.use('/proxy', (req, res) => {
   else pr.end()
 })
 
+// ── Rota que recebe número do bookmarklet ──────────────
+app.post('/api/numero', authMw, (req, res) => {
+    const num  = String(req.body.numero || '')
+    const mesa = req.body.mesa || 'roleta'
+    if (!num || isNaN(parseInt(num)) || parseInt(num) < 0 || parseInt(num) > 36) {
+        return res.status(400).json({ erro: 'Número inválido' })
+    }
+    console.log('[Atlas] Número recebido:', num, '| mesa:', mesa, '| usuário:', req.uid)
+    // Broadcast para todos os clientes WS conectados
+    const payload = JSON.stringify({ tipo: 'numero', numero: num, mesa: mesa })
+    wsClients.forEach(c => {
+        try { if (c.readyState === 1) c.send(payload) } catch(e) {}
+    })
+    res.json({ ok: true, clientes: wsClients.length })
+})
+
 // ── Serve frontend ─────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')))
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')))
 
-http.createServer(app).listen(PORT, () => console.log('[Atlas IA] Porta', PORT))
+const server = http.createServer(app)
+const { WebSocketServer } = require('ws')
+const wss = new WebSocketServer({ server })
+var wsClients = []
+
+wss.on('connection', function(ws) {
+    ws.on('message', function(raw) {
+        try {
+            const d = JSON.parse(raw)
+            if (d.tipo === 'ping') { ws.send(JSON.stringify({ tipo: 'pong' })); return }
+            if (d.tipo === 'auth') {
+                const p = verificarToken(d.token)
+                if (p) {
+                    ws.atlasUserId = p.id
+                    wsClients.push(ws)
+                    ws.send(JSON.stringify({ tipo: 'auth_ok' }))
+                    console.log('[WS] Cliente conectado:', p.id, '| Total:', wsClients.length)
+                } else {
+                    ws.send(JSON.stringify({ tipo: 'auth_erro' }))
+                }
+            }
+        } catch(e) {}
+    })
+    ws.on('close', function() {
+        wsClients = wsClients.filter(function(c){ return c !== ws })
+        console.log('[WS] Cliente saiu. Total:', wsClients.length)
+    })
+    ws.on('error', function(){})
+})
+
+server.listen(PORT, () => console.log('[Atlas IA] Porta', PORT, '| WS ativo'))
