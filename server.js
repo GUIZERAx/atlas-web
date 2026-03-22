@@ -692,16 +692,26 @@ app.use('/proxy', (req, res) => {
     path: parsed.pathname + parsed.search,
     method: req.method,
     headers: {
-      ...req.headers,
-      host: parsed.hostname,
-      origin: parsed.origin,
-      referer: parsed.origin + '/',
+      'host': parsed.hostname,
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       'accept-encoding': 'identity',
+      'sec-ch-ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
+      'sec-fetch-dest': 'document',
+      'sec-fetch-mode': 'navigate',
+      'sec-fetch-site': 'none',
+      'sec-fetch-user': '?1',
+      'upgrade-insecure-requests': '1',
+      'cache-control': 'max-age=0',
+      'origin': parsed.origin,
+      'referer': parsed.origin + '/',
+      // Passa cookies do usuário (importante para sessão logada)
+      ...(req.headers['cookie'] ? { 'cookie': req.headers['cookie'] } : {}),
     }
   }
-  delete opts.headers['x-atlas-token']
-  delete opts.headers['if-none-match']
-  delete opts.headers['if-modified-since']
 
   const pr = mod.request(opts, pRes => {
     const nh = {}
