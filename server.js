@@ -763,6 +763,29 @@ app.post('/api/numero', authMw, (req, res) => {
     res.json({ ok: true, clientes: wsClients.length })
 })
 
+// ── Serve o userscript Tampermonkey ──────────────────────────
+app.get('/instalar', authMw, (req, res) => {
+    // Gera userscript com token do usuário embutido
+    let script = USERSCRIPT_TEMPLATE.replace(
+        "var TOKEN    = GM_getValue('atlasToken', '')",
+        "var TOKEN    = GM_getValue('atlasToken', '" + req.user.token_cached + "')"
+    )
+    // Injeta token do usuário diretamente
+    const token = gerarToken(req.uid)
+    script = script.replace(
+        "var TOKEN    = GM_getValue('atlasToken', '')",
+        "var TOKEN    = '" + token + "' // auto-configurado"
+    )
+    res.setHeader('Content-Type', 'application/x-userscript')
+    res.setHeader('Content-Disposition', 'attachment; filename="atlas-ia-conector.user.js"')
+    res.send(script)
+})
+
+// Página de instalação (não precisa de auth)
+app.get('/instalar-info', (req, res) => {
+    res.redirect('/?info=instalar')
+})
+
 // ── Serve frontend ─────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')))
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')))
