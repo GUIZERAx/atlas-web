@@ -790,6 +790,179 @@ app.get('/instalar-info', (req, res) => {
 app.use(express.static(path.join(__dirname, 'public')))
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')))
 
+
+// ============================================================
+// SCRAPER — WebSocket Evolution Gaming (dados públicos)
+// Conecta nas mesas ao vivo e captura números em tempo real
+// ============================================================
+
+const EVO_MESAS = {
+    'auto-roulette':        'wss://a8-latam.evo-games.com/public/roulette/auto-roulette-1',
+    'speed-auto-roulette':  'wss://a8-latam.evo-games.com/public/roulette/speed-auto-roulette-1',
+    'lightning-roulette':   'wss://a8-latam.evo-games.com/public/roulette/lightning-roulette-1',
+    'immersive-roulette':   'wss://a8-latam.evo-games.com/public/roulette/immersive-roulette-1',
+    'roulette-1':           'wss://a8-latam.evo-games.com/public/roulette/roulette-1',
+    'brazilian-roulette':   'wss://casinobr.pragmaticplaylive.net/ws/roulette/live',
+}
+
+// Mesas ativas (configurável pelo admin)
+var mesasAtivas = (process.env.MESAS_ATIVAS || 'auto-roulette,speed-auto-roulette').split(',')
+
+var scraperConexoes = {}
+var ultimosNumeros  = {}  // { mesa: [n1, n2, ...] }
+
+function iniciarScraper() {
+    mesasAtivas.forEach(function(mesa) {
+        conectarMesa(mesa.trim())
+    })
+    console.log('[Scraper] Iniciado para mesas:', mesasAtivas)
+}
+
+function conectarMesa(mesa) {
+    const wsUrl = EVO_MESAS[mesa]
+    if (!wsUrl) {
+        console.log('[Scraper] Mesa desconhecida:', mesa)
+        return
+    }
+    if (scraperConexoes[mesa] && scraperConexoes[mesa].readyState <= 1) return
+
+    console.log('[Scraper] Conectando em:', mesa, wsUrl)
+
+    const { WebSocket: WS } = require('ws')
+    const ws = new WS(wsUrl, {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Origin': 'https://betou.bet.br',
+        }
+    })
+
+    scraperConexoes[mesa] = ws
+
+    ws.on('open', function() {
+        console.log('[Scraper] Conectado:', mesa)
+        // Solicita histórico e subscrição ao feed de resultados
+        try {
+            ws.send(JSON.stringify({
+                type: 'subscribe',
+                channel: 'results',
+                table: mesa
+            }))
+            ws.send(JSON.stringify({ type: 'history', count: 20 }))
+            ws.send(JSON.stringify({ MT: 'subscribe', S: 'result' }))
+        } catch(e) {}
+    })
+
+    ws.on('message', function(raw) {
+        try {
+            const txt = raw.toString()
+            const data = JSON.parse(txt)
+            const num = extrairNumero(data, mesa)
+            if (num !== null && num !== undefined && !isNaN(num) && num >= 0 && num <= 36) {
+                const numStr = String(num)
+                if (!ultimosNumeros[mesa]) ultimosNumeros[mesa] = []
+                if (ultimosNumeros[mesa][0] === numStr) return // duplicado
+                ultimosNumeros[mesa].unshift(numStr)
+                if (ultimosNumeros[mesa].length > 50) ultimosNumeros[mesa].pop()
+                console.log('[Scraper]', mesa, '→ número:', numStr)
+                // Broadcast para todos os clientes WS
+                broadcastNumero(numStr, mesa)
+            }
+        } catch(e) {}
+    })
+
+    ws.on('close', function(code) {
+        console.log('[Scraper] Desconectado:', mesa, 'code:', code)
+        scraperConexoes[mesa] = null
+        setTimeout(function() { conectarMesa(mesa) }, 5000)
+    })
+
+    ws.on('error', function(e) {
+        console.log('[Scraper] Erro:', mesa, e.message)
+        scraperConexoes[mesa] = null
+        setTimeout(function() { conectarMesa(mesa) }, 8000)
+    })
+
+    // Ping keepalive
+    setInterval(function() {
+        if (ws.readyState === 1) {
+            try { ws.send(JSON.stringify({ type: 'ping' })) } catch(e) {}
+        }
+    }, 30000)
+}
+
+function extrairNumero(data, mesa) {
+    // Formatos conhecidos da Evolution Gaming WS
+    // Formato 1: { result: { outcome: 17 } }
+    if (data.result && data.result.outcome !== undefined) return data.result.outcome
+    // Formato 2: { data: { result: 17 } }
+    if (data.data && data.data.result !== undefined) return data.data.result
+    // Formato 3: { outcome: 17 }
+    if (data.outcome !== undefined) return data.outcome
+    // Formato 4: { winningNumber: 17 }
+    if (data.winningNumber !== undefined) return data.winningNumber
+    // Formato 5: { number: 17 }
+    if (data.number !== undefined && typeof data.number === 'number') return data.number
+    // Formato 6: { MT: "result", Outcome: 17 }
+    if (data.MT === 'result' && data.Outcome !== undefined) return data.Outcome
+    // Formato 7: { type: "RESULT", value: 17 }
+    if (data.type === 'RESULT' && data.value !== undefined) return data.value
+    // Formato 8: history array
+    if (data.history && Array.isArray(data.history) && data.history.length > 0) {
+        const first = data.history[0]
+        if (typeof first === 'number') return first
+        if (first.number !== undefined) return first.number
+        if (first.outcome !== undefined) return first.outcome
+        if (first.result !== undefined) return first.result
+    }
+    // Formato 9: results array
+    if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+        const first = data.results[0]
+        if (typeof first === 'number') return first
+        if (first && first.number !== undefined) return first.number
+    }
+    return null
+}
+
+function broadcastNumero(num, mesa) {
+    const payload = JSON.stringify({ tipo: 'numero', numero: num, mesa: mesa, source: 'auto' })
+    wsClients.forEach(function(c) {
+        try { if (c.readyState === 1) c.send(payload) } catch(e) {}
+    })
+}
+
+// Endpoint para ver status do scraper
+app.get('/api/scraper/status', authMw, function(req, res) {
+    const status = {}
+    Object.keys(EVO_MESAS).forEach(function(mesa) {
+        const ws = scraperConexoes[mesa]
+        status[mesa] = {
+            ativo: mesasAtivas.includes(mesa),
+            conectado: ws && ws.readyState === 1,
+            ultimoNumero: ultimosNumeros[mesa] ? ultimosNumeros[mesa][0] : null,
+            historico: (ultimosNumeros[mesa] || []).slice(0, 10),
+        }
+    })
+    res.json({ mesas: status, total_clientes_ws: wsClients.length })
+})
+
+// Endpoint admin para ativar/desativar mesa
+app.post('/api/scraper/mesa', adminMw, function(req, res) {
+    const { mesa, ativo } = req.body
+    if (!EVO_MESAS[mesa]) return res.status(400).json({ erro: 'Mesa inválida' })
+    if (ativo && !mesasAtivas.includes(mesa)) {
+        mesasAtivas.push(mesa)
+        conectarMesa(mesa)
+    } else if (!ativo) {
+        mesasAtivas = mesasAtivas.filter(function(m){ return m !== mesa })
+        if (scraperConexoes[mesa]) {
+            try { scraperConexoes[mesa].close() } catch(e) {}
+            scraperConexoes[mesa] = null
+        }
+    }
+    res.json({ ok: true, mesasAtivas })
+})
+
+
 const server = http.createServer(app)
 const { WebSocketServer } = require('ws')
 const wss = new WebSocketServer({ server })
@@ -820,4 +993,8 @@ wss.on('connection', function(ws) {
     ws.on('error', function(){})
 })
 
-server.listen(PORT, () => console.log('[Atlas IA] Porta', PORT, '| WS ativo'))
+server.listen(PORT, () => {
+    console.log('[Atlas IA] Porta', PORT, '| WS ativo')
+    // Inicia scraper de números da Evolution após 3s
+    setTimeout(iniciarScraper, 3000)
+})
